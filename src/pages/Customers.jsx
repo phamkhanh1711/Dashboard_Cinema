@@ -238,9 +238,10 @@ export default function Customers() {
             const newSelected = rows.map((n) => n.userId);
             setSelected(newSelected);
             setNumSelected(newSelected.length); // Update numSelected
-            // Update numSelected
-        } 
-        
+        } else {
+            setSelected([]);
+            setNumSelected(0); // Update numSelected
+        }
         console.log(selected);
     };
    
@@ -258,9 +259,10 @@ export default function Customers() {
             newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
         }
         setSelected(newSelected);
+        setNumSelected(newSelected.length); // Update numSelected
         console.log(selected);
     };
-  
+
     const handleChangePage = (event, newPage) => {
         setPage(newPage)
     }

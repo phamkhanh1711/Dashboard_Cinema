@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard'
 import Products from './pages/Products'
 import Addproduct from './pages/Addproduct'
 import Customers from './pages/Customers'
+import Customer_detail from './pages/Customer_detail'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
@@ -22,6 +23,7 @@ root.render(
                         <Route path="/products" element={<Products />} />
                         <Route path="/add" element={<Addproduct />} />
                         <Route path="/customers" element={<Customers />} />
+                        <Route path="/customers_detail/:id" element={<Customer_detail />} />
                     </Route>
                     <Route path="/register" element={<Register />} />
                 </Routes>
