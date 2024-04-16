@@ -3,7 +3,7 @@ import CheckError from "./CheckError";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-
+import Swal from 'sweetalert2';
 function Register() {
 	const [inputs, setInputs] = useState({
 		email: "",
@@ -53,6 +53,11 @@ function Register() {
           console.log(res);
 
           if(res.data.data.role === 1){
+            Swal.fire({
+              title: "Success!",
+              text: res.data.message,
+              icon: "success",
+            }); 
             navigate('/');
           }
           else{
@@ -74,8 +79,13 @@ function Register() {
           // Sau khi đăng nhập thành công, điều hướng đến trang tương ứng
           
         })
-        .catch((error) => { 
-          console.log(error);
+        .catch((response) => { 
+          console.log(response);
+          Swal.fire({
+            title: "Error!",
+            text: response.response.data.message  ,
+            icon: "error",
+      })
         
         });
     }

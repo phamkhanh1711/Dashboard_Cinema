@@ -25,6 +25,7 @@ import { useState } from 'react'
 import { useEffect } from 'react'
 import axios from 'axios'
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom'
 function createData(userId, fullName, email, phoneNumber, gia) {
     return {
         userId,
@@ -36,7 +37,13 @@ function createData(userId, fullName, email, phoneNumber, gia) {
     }
 }
 
-
+// Hàm để lấy ngày tháng năm hiện tại
+function getCurrentMonthYear() {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+    return `${month}/${year}`;
+}
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -201,19 +208,20 @@ EnhancedTableToolbar.propTypes = {
 }
 
 export default function Customers() {
-    const [order, setOrder] = React.useState('asc')
-    const [orderBy, setOrderBy] = React.useState('calories')
-    const [selected, setSelected] = React.useState([])
-    const [page, setPage] = React.useState(0)
-    const [dense, setDense] = React.useState(false)
-    const [rowsPerPage, setRowsPerPage] = React.useState(5)
+    const [order, setOrder] = React.useState('asc');
+    const [orderBy, setOrderBy] = React.useState('calories');
+    const [selected, setSelected] = React.useState([]);
+    const [page, setPage] = React.useState(0);
+    const [dense, setDense] = React.useState(false);
+    const [rowsPerPage, setRowsPerPage] = React.useState(5);
     const [rows, setRows] = useState([]);
-  
+    const [currentMonthYear, setCurrentMonthYear] = useState(getCurrentMonthYear()); // Lưu tháng và năm hiện tại
+   
   
     const config = {
         headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
     };
-
+    const navigate = useNavigate()
     useEffect(() => {   
         axios.get('http://localhost:4000/user/allUser', config)
             .then((response) => {
@@ -226,6 +234,26 @@ export default function Customers() {
     }, []);
     
 
+    useEffect(() => {   
+        axios.get('http://localhost:4000/user/allUser', config)
+            .then((response) => {
+                console.log(response);
+                
+            })
+            .catch((error) => {
+                console.error("Error fetching user data:", error);
+            });
+    }, []);
+    
+
+const calculateMonthlyRevenue = (monthYear) => {
+        return rows.reduce((total, row) => {
+            if (row.ngayThangNam === monthYear) {
+                return total + row.gia;
+            }
+            return total;
+        }, 0);
+    };  
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc'
         setOrder(isAsc ? 'desc' : 'asc')
@@ -245,6 +273,9 @@ export default function Customers() {
         console.log(selected);
     };
    
+    const handledetail = (userId) => {
+        navigate(`/customers_detail/${userId}`);
+    }
     const handleClick = (event, id) => {
         const selectedIndex = selected.indexOf(id);
         let newSelected = [];
@@ -289,7 +320,26 @@ export default function Customers() {
 
     return (
         <Box sx={{ width: '100%' }}>
+             <Typography variant="h6" id="tableTitle" component="div">
+                Doanh Thu Tháng {currentMonthYear}
+            </Typography>
             <Paper sx={{ width: '100%', mb: 2 }}>
+            <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Tháng/Năm</TableCell>
+                                <TableCell>Tổng Doanh Thu</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell>{currentMonthYear}</TableCell>
+                                <TableCell>{calculateMonthlyRevenue(currentMonthYear)}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
                 <EnhancedTableToolbar numSelected={selected.length} />
                 <TableContainer>
                     <Table sx={{ minWidth: 750 }} aria-labelledby="tableTitle" size={dense ? 'small' : 'medium'}>
@@ -308,8 +358,13 @@ export default function Customers() {
 
         return (
             <TableRow
+           
+
             hover
-            onClick={(event) => handleClick(event, row.userId)}
+            onClick={(event) => {
+                handledetail(row.userId);
+                handleClick(event, row.userId);
+            }}
             role="checkbox"
             aria-checked={isItemSelected}
             tabIndex={-1}

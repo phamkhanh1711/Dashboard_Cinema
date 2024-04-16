@@ -31,7 +31,7 @@ function Customer_detail() {
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Grid container spacing={2} sx={{ maxWidth: 800 }}>
+            <Grid container spacing={2} sx={{ maxWidth: 1000 }}>
                 {/* Avatar */}
                 <Grid item xs={6}>
                     <Stack direction="row" spacing={2}>
@@ -40,8 +40,12 @@ function Customer_detail() {
                                 <Avatar
                                     alt={customer.first_name}
                                     src={customer.avatar}
-                                    sx={{ width: 100, height: 100 }} // Thay đổi kích thước của Avatar
+                                    sx={{ width: 200, height: 200 }} // Thay đổi kích thước của Avatar
                                 />
+
+                                <h3 style={{ marginTop: '10px', fontWeight: 'bold', color: 'rgb(19, 183, 136)' }}>
+                                    He/him
+                                </h3>
                             </div>
                         ))}
                     </Stack>
@@ -59,29 +63,32 @@ function Customer_detail() {
                                         name="userId"
                                         type="userId"
                                         margin="normal"
-                                        value={customer.userId} // Hiển thị giá trị từ customerData
+                                        defaultValue={customer.userId} // Thay đổi từ value thành defaultValue
                                     />
+
                                     <TextField
                                         fullWidth
                                         label="Username"
                                         name="username"
                                         margin="normal"
-                                        value={customer.fullName} // Hiển thị giá trị từ customerData
+                                        defaultValue={customer.fullName} // Thay đổi từ value thành defaultValue
                                     />
+
                                     <TextField
                                         fullWidth
                                         label="Email"
                                         name="email"
                                         margin="normal"
-                                        value={customer.email} // Hiển thị giá trị từ customerData
+                                        defaultValue={customer.email} // Thay đổi từ value thành defaultValue
                                     />
+
                                     <TextField
                                         fullWidth
                                         label="phoneNumber"
                                         name="phoneNumber"
                                         type="phoneNumber"
                                         margin="normal"
-                                        value={customer.phoneNumber} // Hiển thị giá trị từ customerData
+                                        defaultValue={customer.phoneNumber} // Thay đổi từ value thành defaultValue
                                     />
 
                                     <Button variant="contained" sx={{ mr: 2 }}>

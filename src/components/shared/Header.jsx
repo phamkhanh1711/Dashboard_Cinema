@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import classNames from 'classnames'
 import axios from 'axios'
 import Customer_detail from '../../pages/Customer_detail'
-
+import SearchIcon from '@mui/icons-material/Search';
 export default function Header() {
     const navigate = useNavigate()
 	const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +67,10 @@ export default function Header() {
                 </div>
 				
             )}
-      <button onClick={handleSearch}>Search</button>
+      <button onClick={handleSearch}>
+            <SearchIcon />
+
+      </button>
         </div>
             <div className="flex items-center gap-2 mr-2">
                 <Popover className="relative">

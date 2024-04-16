@@ -4,71 +4,99 @@ import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
 import Autocomplete from '@mui/material/Autocomplete'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { format } from 'date-fns'
-function AddProduct() {
+import { Movie } from '@mui/icons-material'
+function Product_detail() {
     const navigate = useNavigate()
-    const [Movie, setMovie] = useState({
+    const params = useParams()
+
+    console.log(params)
+    const [formData, setFormData] = useState({
+        movieId: '',
         movieName: '',
         movieCategory: '',
         movieDirector: '',
-        movieDescription: '',
         movieActor: '',
         movieDuration: '',
+        movieDescription: '',
         movieRelease: '',
-        movieImage: '',
         language: '',
         movieCountry: ''
     })
 
+    useEffect(() => {
+        axios
+            .get(`http://localhost:4000/movie/detail-movie/${params.movieId}`)
+            .then((res) => {
+                const data = res.data
+                setFormData({
+                    movieName: data.movieName,
+                    movieCategory: data.movieCategory,
+                    movieDirector: data.movieDirector,
+                    movieActor: data.movieActor,
+                    movieDuration: data.movieDuration,
+                    movieDescription: data.movieDescription,
+                    movieRelease: data.movieRelease,
+                    language: data.language,
+                    movieCountry: data.country
+                })
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+    }, [params.movieId])
     const handleChange = (e) => {
-        const nameInput = e.target.name
-        const value = e.target.value
-        setMovie((state) => ({ ...state, [nameInput]: value }))
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        })
     }
-
-    const handleImageChange = (event) => {
-        const imageFile = event.target.files[0]
-        const imageURL = URL.createObjectURL(imageFile)
-        setMovie({ ...Movie, movieImage: imageURL })
-    }
-    const handleSubmit = async (event) => {
-        event.preventDefault()
-        const formattedDate = format(new Date(Movie.movieRelease), 'yyyy-MM-dd')
-        const formData = {
-            movieName: Movie.movieName,
-            movieCategory: Movie.movieCategory,
-            movieDescription: Movie.movieDescription,
-            movieDirector: Movie.movieDirector,
-            movieActor: Movie.movieActor,
-            movieImage: Movie.movieImage,
-            movieDuration: parseInt(Movie.movieDuration),
-            movieRelease: formattedDate, // Sử dụng ngày tháng đã được định dạng lại
-            trailer: Movie.trailer,
-            language: Movie.language,
-            country: Movie.movieCountry // Sửa lại tên trường thành 'movieCountry'
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        const formattedDate = format(new Date(formData.movieRelease), 'yyyy-MM-dd')
+        const data = {
+            movieId: params.movieId,
+            movieName: formData.movieName,
+            movieCategory: formData.movieCategory,
+            movieDirector: formData.movieDirector,
+            movieActor: formData.movieActor,
+            movieDuration: parseInt(formData.movieDuration),
+            movieDescription: formData.movieDescription,
+            movieRelease: formattedDate,
+            language: formData.language,
+            country: formData.movieCountry
         }
-        try {
-            const response = await axios.post('http://localhost:4000/movie/add-movie', formData)
-            console.log(response) // In ra dữ liệu trả về từ API
-            alert('Thêm phim thành công')
-            navigate('/products')
-        } catch (error) {
-            console.error(error)
-            alert('Thêm phim không thành công')
-        }
+        axios
+            .put(`http://localhost:4000/movie/update-movie/${params.movieId}`, data)
+            .then((res) => {
+                console.log(res)
+                alert('Edit product successfully')
+                navigate('/products')
+            })
+            .catch((err) => {
+                console.log(err)
+                alert('Edit product failed')
+            })
     }
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Add Product</h1>
+            <h1>Edit Product</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField label="Movie Name" name="movieName" sx={{ width: 700 }} onChange={handleChange} />
+                    <TextField
+                        label="Movie Name"
+                        name="movieName"
+                        sx={{ width: 700 }}
+                        value={formData.movieName}
+                        onChange={handleChange}
+                    />
                     <TextField
                         label="Movie Category"
                         name="movieCategory"
                         onChange={handleChange}
+                        value={formData.movieCategory}
                         sx={{ width: 700, marginLeft: '16px' }}
                     />
                 </div>
@@ -77,18 +105,21 @@ function AddProduct() {
                         label="Movie Director"
                         name="movieDirector"
                         sx={{ width: 300 }}
+                        value={formData.movieDirector}
                         onChange={handleChange}
                     />
                     <TextField
                         label="Movie Actor"
                         name="movieActor"
                         sx={{ width: 300, marginLeft: '16px' }}
+                        value={formData.movieActor}
                         onChange={handleChange}
                     />
                     <TextField
                         label="Movie Duration"
                         name="movieDuration"
                         sx={{ width: 300, marginLeft: '16px' }}
+                        value={formData.movieDuration}
                         onChange={handleChange}
                     />
                 </div>
@@ -97,18 +128,21 @@ function AddProduct() {
                         label="Movie Description"
                         name="movieDescription"
                         sx={{ width: 400 }}
+                        value={formData.movieDescription}
                         onChange={handleChange}
                     />
                     <TextField
                         label="Movie Release"
                         name="movieRelease"
                         sx={{ width: 300, marginLeft: '16px' }}
+                        value={formData.movieRelease}
                         onChange={handleChange}
                     />
                 </div>
                 <TextField
                     label="Movie Language"
                     name="language"
+                    value={formData.language}
                     onChange={handleChange}
                     margin="normal"
                     sx={{ width: 300 }}
@@ -116,17 +150,17 @@ function AddProduct() {
                 <TextField
                     label="Movie Country"
                     name="movieCountry"
+                    value={formData.movieCountry}
                     onChange={handleChange}
                     margin="normal"
                     sx={{ width: 300 }}
                 />
-                <input type="file" name="movieImage" onChange={handleImageChange} style={{ marginBottom: '16px' }} />
                 <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
-                    Add Product
+                    Edit Product
                 </Button>
             </form>
         </Box>
     )
 }
 
-export default AddProduct
+export default Product_detail
