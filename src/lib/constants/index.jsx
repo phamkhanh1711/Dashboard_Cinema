@@ -8,7 +8,7 @@ import {
 	HiOutlineQuestionMarkCircle,
 	HiOutlineCog
 } from 'react-icons/hi'
-
+import { IoFastFood } from "react-icons/io5";
 export const DASHBOARD_SIDEBAR_LINKS = [
 	{
 		key: 'dashboard',
@@ -23,9 +23,15 @@ export const DASHBOARD_SIDEBAR_LINKS = [
 		icon: <HiOutlineCube />
 	},
 	{
+		key: 'food',
+		label: 'Foods',
+		path: '/food',
+		icon:<IoFastFood />	
+	},
+	{
 		key: 'orders',
-		label: 'Orders',
-		path: '/orders',
+		label: 'Movie showtimes',
+		path: '/showtime',
 		icon: <HiOutlineShoppingCart />
 	},
 	{

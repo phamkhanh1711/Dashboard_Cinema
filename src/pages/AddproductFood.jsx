@@ -6,7 +6,8 @@ import Autocomplete from '@mui/material/Autocomplete'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import Cookies from "js-cookie";
+import Cookies from 'js-cookie'
+import { handleUploadFile } from '../config/uploadImage'
 function AddproductFood() {
     const navigate = useNavigate()
     const [Food, setFood] = useState({
@@ -23,40 +24,46 @@ function AddproductFood() {
 
     const handleImageChange = (event) => {
         const imageFile = event.target.files[0]
-        const imageURL = URL.createObjectURL(imageFile)
-        setFood({ ...Food, foodImage: imageURL })
+        
+        setFood({ ...Food,  foodImage: imageFile })
     }
     const handleSubmit = async (event) => {
-        event.preventDefault();
+        event.preventDefault()
+
+        if(Food.foodImage !== '')
+        {
+            const urlImage = await handleUploadFile(Food.foodImage)
+            setFood({ ...Food, foodImage: urlImage })
+        }
+
         const formData = {
             foodName: Food.foodName,
             foodPrice: Food.foodPrice,
             foodImage: Food.foodImage
-        };
-    
-        const Token = Cookies.get("Token");
-        
+        }
+       
+        const Token = Cookies.get('Token')
+
         // Khai báo các thông tin header
         const config = {
             headers: {
-                'Authorization': `Bearer ${Token}`, // Thêm token vào header
+                Authorization: `Bearer ${Token}`, // Thêm token vào header
                 'Content-Type': 'application/json' // Xác định kiểu dữ liệu của yêu cầu
             }
-        };
-    
-        const url = "http://localhost:4000/food/add-food";
-    
-        try {
-            const response = await axios.post(url, formData, config); // Truyền config vào axios.post
-            console.log(response); // In ra dữ liệu trả về từ API
-            alert('Thêm food thành công');
-             navigate('/products');
-        } catch (error) {
-            console.error(error);
-            alert('Thêm food không thành công');
         }
-    };
-    
+
+        const url = 'http://localhost:4000/food/add-food'
+
+        try {
+            const response = await axios.post(url, formData, config) // Truyền config vào axios.post
+            console.log(response) // In ra dữ liệu trả về từ API
+            alert('Thêm food thành công')
+            navigate('/products')
+        } catch (error) {
+            console.error(error)
+            alert('Thêm food không thành công')
+        }
+    }
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>

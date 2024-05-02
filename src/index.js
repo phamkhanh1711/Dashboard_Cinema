@@ -14,6 +14,9 @@ import Customer_detail from './pages/Customer_detail'
 import AddproductFood from './pages/AddproductFood'
 import Product_detail from './pages/Product_detail'
 import Food_detail from './pages/Food_detail'
+import FoodProduct from './pages/FoodProduct'
+import MovieShowtime from './pages/MovieShowtime'
+import AddMovieShowtime from './pages/AddMovieShowtime'
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
@@ -24,6 +27,9 @@ root.render(
                     <Route path="/" element={<Layout />}>
                         <Route index element={<Dashboard />} />
                         <Route path="/products" element={<Products />} />
+                        <Route path="/food" element={<FoodProduct />} /> 
+                        <Route path="/showtime" element={<MovieShowtime />} />     \
+                        <Route path="/addshowtime" element={<AddMovieShowtime/>} />                    
                         <Route path="/add" element={<Addproduct />} />
                         <Route path="/addd" element={<AddproductFood />} />
                         <Route path="/propduct_detail/:movieId" element={<Product_detail />} />

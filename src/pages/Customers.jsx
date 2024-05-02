@@ -234,16 +234,7 @@ export default function Customers() {
     }, []);
     
 
-    useEffect(() => {   
-        axios.get('http://localhost:4000/user/allUser', config)
-            .then((response) => {
-                console.log(response);
-                
-            })
-            .catch((error) => {
-                console.error("Error fetching user data:", error);
-            });
-    }, []);
+   
     
 
 const calculateMonthlyRevenue = (monthYear) => {
@@ -260,64 +251,74 @@ const calculateMonthlyRevenue = (monthYear) => {
         setOrderBy(property)
     }
     const [numSelected, setNumSelected] = React.useState(0);
-
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
             const newSelected = rows.map((n) => n.userId);
             setSelected(newSelected);
-            setNumSelected(newSelected.length); // Update numSelected
+            setNumSelected(newSelected.length);
+            console.log(newSelected); // Di chuyển console.log vào đây
         } else {
             setSelected([]);
-            setNumSelected(0); // Update numSelected
+            setNumSelected(0);
         }
-        console.log(selected);
+        
     };
+        
    
     const handledetail = (userId) => {
         navigate(`/customers_detail/${userId}`);
     }
     const handleClick = (event, id) => {
-        const selectedIndex = selected.indexOf(id);
-        let newSelected = [];
+    const selectedIndex = selected.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+        // Nếu ID không tồn tại trong mảng selected, thêm nó vào mảng
+        newSelected = [...selected, id];
+    } else {
+        // Nếu ID đã tồn tại trong mảng selected, loại bỏ nó khỏi mảng
+        newSelected = selected.filter((item) => item !== id);
+    }
+
+    setSelected(newSelected);
+    console.log(newSelected);
+};
+
     
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, id);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-        }
-        setSelected(newSelected);
-        setNumSelected(newSelected.length); // Update numSelected
-        console.log(selected);
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
     };
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage)
-    }
-
     const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10))
-        setPage(0)
-    }
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
 
     const handleChangeDense = (event) => {
-        setDense(event.target.checked)
-    }
+        setDense(event.target.checked);
+    };
+
     const isSelected = (id) => selected.indexOf(id) !== -1;
 
+    // Truyền ID vào handleClick khi checkbox thay đổi trạng thái
+    const handleCheckboxChange = (event, id) => {
+        handleClick(event, id);
+    };
 
-    // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
+    // Hãy đảm bảo rằng rows đã được định nghĩa
+    // và bạn đã import stableSort và getComparator từ một nơi khác
+
+    const emptyRows =
+        page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
     const visibleRows = React.useMemo(
         () =>
-            stableSort(rows, getComparator(order, orderBy)).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+            stableSort(rows, getComparator(order, orderBy)).slice(
+                page * rowsPerPage,
+                page * rowsPerPage + rowsPerPage
+            ),
         [order, orderBy, page, rowsPerPage]
-    )
-
+    );
     return (
         <Box sx={{ width: '100%' }}>
              <Typography variant="h6" id="tableTitle" component="div">
@@ -360,9 +361,9 @@ const calculateMonthlyRevenue = (monthYear) => {
             <TableRow
            
 
-            hover
+            
             onClick={(event) => {
-                handledetail(row.userId);
+                
                 handleClick(event, row.userId);
             }}
             role="checkbox"
