@@ -16,6 +16,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import { Typography } from '@mui/material'
+import Swal from 'sweetalert2'
 function AddProduct() {
     const navigate = useNavigate()
     const [Movie, setMovie] = useState({
@@ -72,9 +73,10 @@ function AddProduct() {
         event.preventDefault();
     
         try {
+            let urlImage
             if(Movie.movieImage !== '')
             {
-                const urlImage = await handleUploadFile(Movie.movieImage)
+                urlImage = await handleUploadFile(Movie.movieImage)
                 setMovie({ ...Movie, movieImage: urlImage })
             }
             const formattedDate = format(new Date(Movie.movieRelease), 'yyyy-MM-dd');
@@ -84,7 +86,7 @@ function AddProduct() {
                 movieDescription: Movie.movieDescription,
                 movieDirector: Movie.movieDirector,
                 movieActor: Movie.movieActor,
-                movieImage: Movie.movieImage, // Sử dụng đường dẫn của ảnh từ server
+                movieImage: urlImage, // Sử dụng đường dẫn của ảnh từ server
                 movieDuration: parseInt(Movie.movieDuration),
                 movieRelease: formattedDate,
                 language: Movie.language,
@@ -94,11 +96,19 @@ function AddProduct() {
     
             const response = await axios.post('http://localhost:4000/movie/add-movie', formData);
             console.log(response);
-            alert('Thêm phim thành công');
+           Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Thêm phim thành công'
+            });
             navigate('/products');
         } catch (error) {
             console.error(error);
-            alert('Thêm phim không thành công');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Thêm phim thất bại'
+            });
         }
     };
     

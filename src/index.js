@@ -17,7 +17,10 @@ import Food_detail from './pages/Food_detail'
 import FoodProduct from './pages/FoodProduct'
 import MovieShowtime from './pages/MovieShowtime'
 import AddMovieShowtime from './pages/AddMovieShowtime'
-
+import Booking from './pages/Booking'
+import TicketFree from './pages/TicketFree'
+import AddTicketFree from './pages/AddTicketFree'
+import Booking_detail from './pages/Booking_detail'
 const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
     <React.StrictMode>
@@ -36,7 +39,11 @@ root.render(
                         <Route path="/food_detail/:foodId" element={<Food_detail />} />
                         <Route path="/customers" element={<Customers />} />
                         <Route path="/customers_detail/:id" element={<Customer_detail />} />
-                    </Route>
+                        <Route path="/booking" element={<Booking />} />
+                        <Route path="/ticket" element={<TicketFree />} />
+                        <Route path="/addticketfree" element={<AddTicketFree />} />
+                        <Route path="/booking_detail/:bookingId" element={<Booking_detail />} />
+                        </Route>
                     <Route path="/register" element={<Register />} />
                 </Routes>
             </App>

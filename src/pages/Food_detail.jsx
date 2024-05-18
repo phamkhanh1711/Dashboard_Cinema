@@ -72,18 +72,18 @@ function Food_detail() {
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Edit Product</h1>
+            <h1>Cập Nhật Đồ Ăn</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
-                        label="Food Name"
+                        label="Tên Đồ Ăn"
                         name="foodName"
                         sx={{ width: 700 }}
                         value={formData.foodName}
                         onChange={handleChange}
                     />
                     <TextField
-                        label="Movie Category"
+                        label="Gia Tiền"
                         name="foodPrice"
                         onChange={handleChange}
                         value={formData.foodPrice}
@@ -101,7 +101,7 @@ function Food_detail() {
                     sx={{ width: 300 }}
                 /> */}
                 <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
-                    Edit Product
+                    Cập Nhật Đồ Ăn
                 </Button>
             </form>
         </Box>

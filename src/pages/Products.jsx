@@ -157,18 +157,18 @@ function Products() {
     return (
         <>
             <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 flex-1">
-                <strong className="text-gray-700 font-medium">Product Phim</strong>
+                <strong className="text-gray-700 font-medium">Tất cả Phim</strong>
                 <div className="border-x border-gray-200 rounded-sm mt-3">
                     <table className="w-full text-gray-700">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Title</th>
-                                <th>Category</th>
-                                <th>Image</th>
-                                <th>Director</th>
-                                <th>Duration</th>
-                                <th>country</th>
+                                <th>Tên Phim</th>
+                                <th>Thể Loại</th>
+                                <th>Hình Ảnh</th>
+                                <th>Đạo Diễn</th>
+                                <th>Thời Lượng</th>
+                                <th>Sản Xuất</th>
                             </tr>
                         </thead>
                         <tbody>

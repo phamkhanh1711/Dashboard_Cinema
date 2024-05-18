@@ -20,42 +20,7 @@ export default function Sidebar() {
                 <span className="text-neutral-200 text-lg">$BHDCinema</span>
             </div>
             <div className="py-8 flex flex-1 flex-col gap-0.5">
-    <Accordion
-        sx={{
-            background: "transparent",
-            boxShadow: "none",
-        }}
-       
-    >
-        <AccordionSummary
-            expandIcon={<ArrowDropDownIcon />}
-            aria-controls="panel1-content"
-            id="panel1-header"
-        >
-            <Typography
-                sx={{
-                    fontSize: "18px",
-                    fontFamily: "'Space Grotesk',sans-serif",
-                    "&:hover": {
-                        color: "#f50963",
-                        cursor: "pointer",
-                    },
-                }}
-            >
-                Products
-            </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-            <ul style={{ fontSize: "14px", listStyleType: "none", padding: 0 }}>
-                {DASHBOARD_SIDEBAR_LINKS.map((link) => (
-                    <li key={link.key} style={{ marginBottom: "7px" }}>
-                        <Link to={link.path}>{link.label}</Link>
-                    </li>
-                ))}
-            </ul>
-        </AccordionDetails>
-    </Accordion>
-
+ 
     {DASHBOARD_SIDEBAR_LINKS.map((link) => (
         <SidebarLink key={link.key} link={link} />
     ))}

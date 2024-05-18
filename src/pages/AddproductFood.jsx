@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import Cookies from 'js-cookie'
 import { handleUploadFile } from '../config/uploadImage'
+import Swal from 'sweetalert2'
 function AddproductFood() {
     const navigate = useNavigate()
     const [Food, setFood] = useState({
@@ -29,17 +30,17 @@ function AddproductFood() {
     }
     const handleSubmit = async (event) => {
         event.preventDefault()
-
+        let urlImage 
         if(Food.foodImage !== '')
         {
-            const urlImage = await handleUploadFile(Food.foodImage)
+             urlImage = await handleUploadFile(Food.foodImage)
             setFood({ ...Food, foodImage: urlImage })
         }
 
         const formData = {
             foodName: Food.foodName,
             foodPrice: Food.foodPrice,
-            foodImage: Food.foodImage
+            foodImage: urlImage
         }
        
         const Token = Cookies.get('Token')
@@ -57,22 +58,32 @@ function AddproductFood() {
         try {
             const response = await axios.post(url, formData, config) // Truyền config vào axios.post
             console.log(response) // In ra dữ liệu trả về từ API
-            alert('Thêm food thành công')
-            navigate('/products')
+            Swal.fire({
+                icon: 'success',
+                title: 'Thêm food thành công',
+                showConfirmButton: false,
+                timer: 4500
+            })
+            navigate('/food')
         } catch (error) {
             console.error(error)
-            alert('Thêm food không thành công')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Thêm food thất bại',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
         }
     }
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Add Product</h1>
+            <h1>Tạo Đồ Ăn</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField label="Food Name" name="foodName" sx={{ width: 700 }} onChange={handleChange} />
+                    <TextField label="Tên Đồ Ăn" name="foodName" sx={{ width: 700 }} onChange={handleChange} />
                     <TextField
-                        label="Food Price"
+                        label="Giá Tiền"
                         name="foodPrice"
                         onChange={handleChange}
                         sx={{ width: 700, marginLeft: '16px' }}
@@ -81,7 +92,7 @@ function AddproductFood() {
 
                 <input type="file" name="foodImage" onChange={handleImageChange} style={{ marginBottom: '16px' }} />
                 <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
-                    Add Product Food
+                    Thêm Đồ ăn
                 </Button>
             </form>
         </Box>

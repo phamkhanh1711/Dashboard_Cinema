@@ -12,44 +12,44 @@ import { IoFastFood } from "react-icons/io5";
 export const DASHBOARD_SIDEBAR_LINKS = [
 	{
 		key: 'dashboard',
-		label: 'Dashboard',
+		label: 'Trang Quản Trị',
 		path: '/',
 		icon: <HiOutlineViewGrid />
 	},
 	{
 		key: 'products',
-		label: 'Products',
+		label: 'Tạo Phim',
 		path: '/products',
 		icon: <HiOutlineCube />
 	},
 	{
 		key: 'food',
-		label: 'Foods',
+		label: 'Đồ Ăn Nhanh',
 		path: '/food',
 		icon:<IoFastFood />	
 	},
 	{
 		key: 'orders',
-		label: 'Movie showtimes',
+		label: 'Lịch Chiếu Phim',
 		path: '/showtime',
 		icon: <HiOutlineShoppingCart />
 	},
 	{
 		key: 'customers',
-		label: 'Customers',
+		label: 'Thông tin khách hàng',
 		path: '/customers',
 		icon: <HiOutlineUsers />
 	},
 	{
-		key: 'transactions',
-		label: 'Transactions',
-		path: '/transactions',
+		key: 'booking',
+		label: 'Lịch Sử Đặt Vé',
+		path: '/booking',
 		icon: <HiOutlineDocumentText />
 	},
 	{
-		key: 'messages',
-		label: 'Messages',
-		path: '/messages',
+		key: 'ticket',
+		label: 'Vé Khuyến Mãi',
+		path: '/ticket',
 		icon: <HiOutlineAnnotation />
 	}
 ]
