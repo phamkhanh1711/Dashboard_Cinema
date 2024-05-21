@@ -31,6 +31,7 @@ function Booking() {
                 const response = await axios.get('http://localhost:4000/booking/admin/allBooking');
                 console.log('Booking data:', response);
                 setBookingData(response.data.data.getAllBooking);
+                localStorage.setItem('bookingData', JSON.stringify(response.data.data.getAllBooking));  // Save data to local storage
             } catch (error) {
                 console.error('Error fetching booking data:', error);
             }

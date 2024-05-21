@@ -2,20 +2,15 @@ import React, { useEffect, useState } from 'react'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import Autocomplete from '@mui/material/Autocomplete'
+
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { format } from 'date-fns'
-import { handleUploadFile } from '../config/uploadImage'
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Grid from '@mui/material/Grid';
 import { Typography } from '@mui/material'
+import { handleUploadFile } from '../config/uploadImage'
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers-pro/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers-pro/AdapterDayjs';
+import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 function AddTicketFree() {
     const navigate = useNavigate()
     const [ticket, setTicket] = useState({
@@ -28,6 +23,7 @@ function AddTicketFree() {
         imagePromo: ''
     });
 
+     const [errors, setErrors] = useState([]);
     const handleChange = (e) => {
         const nameInput = e.target.name;
         const value = e.target.value;
@@ -35,16 +31,76 @@ function AddTicketFree() {
     };
    
     
+    const [fileName, setFileName] = useState('');
+
     const handleImageChange = (event) => {
-        const imageFile = event.target.files[0]
-        
-        setTicket({ ...ticket,  imagePromo: imageFile })
-    }
+        if (event.target.files.length > 0) {
+            const file = event.target.files[0];
+            setFileName(file.name);
+        }
+    };
+
+    const handleDateRangeChange = (newValue) => {
+        setTicket((prevState) => ({
+            ...prevState,
+            startDate: newValue[0] ? newValue[0].format('YYYY-MM-DD') : '',
+            endDate: newValue[1] ? newValue[1].format('YYYY-MM-DD') : ''
+        }));
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        let errorsSubmit = {};
+        let flag = true;
+
+        if (ticket.code === '') {
+            errorsSubmit.code = 'Mã không được để trống';
+            flag = false;
+        }
+        if (ticket.promotionName === '') {
+            errorsSubmit.promotionName = 'Tên vé không được để trống';
+            flag = false;
+        }
+        if (ticket.description === '') {
+            errorsSubmit.description = 'Mô tả không được để trống';
+            flag = false;
+        }
+        if (ticket.discount === '') {
+            errorsSubmit.discount = 'Giảm giá không được để trống';
+            flag = false;
+        }
+        if(ticket.startDate === '' || ticket.endDate === '')
+            {
+                errorsSubmit.date = 'Ngày bắt đầu và ngày kết thúc không được để trống';
+                flag = false;
+            }    
+            if(ticket.imagePromo.length === 0)
+                {
+                    errorsSubmit.imagePromo = 'Hình ảnh không được để trống';
+                    flag = false;
+                }
+                else{
+                    let size = ticket.imagePromo.size
+                    let name = ticket.imagePromo.name
+                    let ext = name.split('.').pop()
+                    let arrExt = ['jpg', 'jpeg', 'png', 'gif']
+                    if(!arrExt.includes(ext))
+                    {
+                        errorsSubmit.imagePromo = 'Hình ảnh không đúng định dạng';
+                        setTicket({ ...ticket, imagePromo: '' })
+                        flag = false;
+
+                    }
+                    else if(size > 1024 * 1024)
+                    {
+                        errorsSubmit.imagePromo = 'Hình ảnh không được quá 1MB';
+                        setTicket({ ...ticket, imagePromo: '' })
+                        flag = false;
+                    }
+                }
+
         let urlImage 
-        try {
+        
             if(ticket.imagePromo !== '')
                 {
                      urlImage = await handleUploadFile(ticket.imagePromo)
@@ -53,29 +109,42 @@ function AddTicketFree() {
         
 
             if (ticket.startDate >= ticket.endDate) {
-                alert("Ngày bắt đầu không được lớn hơn ngày kết thúc");
-                return;
+                errorsSubmit.date = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc';
+                flag = false;
             }
 
+            if(!flag)
+            {
+                setErrors(errorsSubmit);
+                alert('Vui lòng nhập đầy đủ thông tin');
+                return;
+            }
+            else {
+                setErrors({});
+                try{
+                    const formData = {
+                        code: ticket.code,
+                        promotionName: ticket.promotionName,
+                        description: ticket.description,
+                        discount: ticket.discount,
+                        startDate: ticket.startDate,
+                        endDate: ticket.endDate,
+                        imagePromo: urlImage
+                    };
+            
+                    const response = await axios.post('http://localhost:4000/promotion/ticketfree', formData);
+                    console.log(response);
+                    alert('tạo vé khuyến mãi thành công');
+                    navigate('/ticket');
+                } catch (error) {
+                    console.error(error);
+                    alert('tạo vé khuyến mãi thất bại');
+                }
+                }
+            }
         
-            const formData = {
-                code: ticket.code,
-                promotionName: ticket.promotionName,
-                description: ticket.description,
-                discount: ticket.discount,
-                startDate: ticket.startDate,
-                endDate: ticket.endDate,
-                imagePromo: urlImage
-            };
-    
-            const response = await axios.post('http://localhost:4000/promotion/ticketfree', formData);
-            console.log(response);
-            alert('tạo vé khuyến mãi thành công');
-        } catch (error) {
-            console.error(error);
-            alert('tạo vé khuyến mãi thất bại');
-        }
-    };
+        
+
     
     
     const [selected, setSelected] = useState([]);
@@ -99,49 +168,58 @@ function AddTicketFree() {
             <h1>Tạo Vé Khuyến Mãi</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField label="Mã" name="code" sx={{ width: 700 }} onChange={handleChange} />
+                    <TextField label="Mã" name="code" sx={{ width: 400 }} onChange={handleChange} />
+                    {errors.code && <span style={{ color: 'red' }}>{errors.code}</span>}
                     <TextField
                         label="Tên Vé Khuyen Mai"
                         name="promotionName"
                         onChange={handleChange}
-                        sx={{ width: 700, marginLeft: '16px' }}
+                        sx={{ width: 400, marginLeft: '16px' }}
                     />
+                    {errors.promotionName && <span style={{ color: 'red' }}>{errors.promotionName}</span>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
                         label="Giới thiệu"
                         name="description"
-                        sx={{ width: 300 }}
+                        sx={{ width: 400 }}
                         onChange={handleChange}
                     />
+                    {errors.description && <span style={{ color: 'red' }}>{errors.description}</span>       }
                     <TextField
                         label="Giảm giá"
                         name="discount"
                         sx={{ width: 300, marginLeft: '16px' }}
                         onChange={handleChange}
                     />
-                  
+                  {errors.discount && <span style={{ color: 'red' }}>{errors.discount}</span>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                <TextField
-                        label="Ngày Bắt Đầu"
-                        name="startDate"
-                        sx={{ width: 300 }}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        label="Ngày Kết Thúc"
-                        name="endDate"
-                        sx={{ width: 300 , marginLeft: '16px'}}
-                        onChange={handleChange}
-                    />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={['DateRangePicker']}>
+                            <DateRangePicker
+                                localeText={{ start: 'Ngày bắt đầu', end: 'Ngày kết thúc' }}
+                                onChange={handleDateRangeChange}
+                            />
+                            {errors.date && <span style={{ color: 'red' }}>{errors.date}</span>}
+                        </DemoContainer>
+                    </LocalizationProvider>
                    
                 </div>
              
-                <input type="file" name="foodImage" onChange={handleImageChange} style={{ marginBottom: '16px' }} />
+                <Button variant="contained" type='file' component="label" sx={{ width: 150, marginTop: "2%" }}>
+                Upload File
+                <input type="file" name="imagePromo" hidden onChange={handleImageChange} />
+            </Button>
+            {fileName && (
+                <Typography variant="body1" sx={{ marginLeft: 2, marginTop: "2%" }}>
+                    {fileName}
+                </Typography>
+            )}
+                        {errors.imagePromo && <span style={{ color: 'red' }}>{errors.imagePromo}</span>}
+        
 
-
-                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
+                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop:"2%" }}>
                     Tạo Vé Khuyến Mãi
                 </Button>
             </form>

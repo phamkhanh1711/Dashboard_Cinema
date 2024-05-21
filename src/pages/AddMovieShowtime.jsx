@@ -2,18 +2,25 @@ import React, { useEffect, useState } from 'react'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import Autocomplete from '@mui/material/Autocomplete'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
-
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { MultiInputTimeRangeField } from '@mui/x-date-pickers-pro/MultiInputTimeRangeField'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import Select from '@mui/material/Select'
 
 function AddMovieShowtime() {
     const navigate = useNavigate()
     const [showtime, setShowtime] = useState({
-        CreateOn: '',
+        CreateOn: null,
         startTime: '',
         endTime: '',
         cinemaHallName: '',
@@ -21,23 +28,38 @@ function AddMovieShowtime() {
         movieName: '',
         priceSeat: ''
     })
-
+    const [errors, setErrors] = useState([])
     const handleChange = (e) => {
         const { name, value } = e.target
         setShowtime((prevState) => ({ ...prevState, [name]: value }))
     }
 
-    const [cinemaHallName, setcinemaHallName] = useState([])
+    const handleDateChange = (date) => {
+        setShowtime((prevState) => ({
+            ...prevState,
+            CreateOn: date
+        }))
+    }
+
+    const handleTimeRangeChange = (newValue) => {
+        setShowtime((prevState) => ({
+            ...prevState,
+            startTime: newValue[0] ? newValue[0].format('HH:mm') : '',
+            endTime: newValue[1] ? newValue[1].format('HH:mm') : ''
+        }))
+    }
+
+    const [cinemaHallName, setCinemaHallName] = useState([])
 
     useEffect(() => {
-        getcinemaHallName()
+        getCinemaHallName()
     }, [])
 
-    const getcinemaHallName = async () => {
+    const getCinemaHallName = async () => {
         try {
             const response = await axios.get('http://localhost:4000/cinemaHall/allCinemaHall')
             console.log(response)
-            setcinemaHallName(response.data.allCinemaHall)
+            setCinemaHallName(response.data.allCinemaHall)
         } catch (error) {
             console.error(error)
         }
@@ -45,42 +67,68 @@ function AddMovieShowtime() {
 
     const handleSubmit = async (event) => {
         event.preventDefault()
+        let errorsSubmit = {}
+        let flag = true
 
-        // Kiểm tra tính hợp lệ của giờ bắt đầu và giờ kết thúc
-        if (showtime.startTime >= showtime.endTime) {
-            alert('Giờ bắt đầu phải nhỏ hơn giờ kết thúc')
+        if (showtime.CreateOn === null) {
+            errorsSubmit.CreateOn = 'Vui lòng chọn ngày chiếu'
+            flag = false
+        }
+        if (showtime.startTime === '') {
+            errorsSubmit.startTime = 'Vui lòng chọn giờ bắt đầu'
+            flag = false
+        } else if (showtime.endTime === '') {
+            errorsSubmit.endTime = 'Vui lòng chọn giờ kết thúc'
+            flag = false
+        } else if (showtime.startTime >= showtime.endTime) {
+            errorsSubmit.time = 'Giờ bắt đầu phải nhỏ hơn giờ kết thúc'
+            flag = false
+        }
+        if (showtime.cinemaHallName === '') {
+            errorsSubmit.cinemaHallName = 'Vui lòng chọn rạp'
+            flag = false
+        }
+        if (showtime.typeName === '') {
+            errorsSubmit.typeName = 'Vui lòng nhập thể loại phim'
+            flag = false
+        }
+        if (showtime.movieName === '') {
+            errorsSubmit.movieName = 'Vui lòng nhập tên phim'
+            flag = false
+        }
+       
+        if (showtime.priceSeat === '') {
+            errorsSubmit.priceSeat = 'Vui lòng nhập giá ghế'
+            flag = false
+        } else if (isNaN(showtime.priceSeat)) {
+            errorsSubmit.priceSeat = 'Giá ghế phải là số'
+            flag = false
+        }
+
+        if (!flag) {
+            setErrors(errorsSubmit)
+            alert('Vui lòng nhập đầy đủ thông tin')
             return
-        }
-
-        const formData = {
-            CreateOn: showtime.CreateOn,
-            startTime: showtime.startTime,
-            endTime: showtime.endTime,
-            cinemaHallName: showtime.cinemaHallName,
-            typeName: showtime.typeName,
-            movieName: showtime.movieName,
-            priceSeat: showtime.priceSeat
-        }
-
-        const url = 'http://localhost:4000/show/createShow'
-
-        try {
-            const response = await axios.post(url, formData)
-            console.log(response)
-            Swal.fire({
-                icon: 'success',
-                title: 'Thêm lịch chiếu thành công',
-                showConfirmButton: false,
-                timer: 1500
-            })
-        } catch (error) {
-            console.error(error)
-            Swal.fire({
-                icon: 'error',
-                title: 'Thêm lịch chiếu thất bại',
-                showConfirmButton: false,
-                timer: 1500
-            })
+        } else {
+            setErrors({})
+            try {
+                const formData = {
+                    CreateOn: showtime.CreateOn.format('YYYY-MM-DD'),
+                    startTime: showtime.startTime,
+                    endTime: showtime.endTime,
+                    cinemaHallName: showtime.cinemaHallName,
+                    typeName: showtime.typeName,
+                    movieName: showtime.movieName,
+                    priceSeat: showtime.priceSeat
+                }
+                const response = await axios.post('http://localhost:4000/show/createShow', formData)
+                console.log(response)
+                alert('Thêm lịch chiếu thành công')
+                navigate('/showtime')
+            } catch (error) {
+                console.error(error)
+                alert('Thêm lịch chiếu thất bại')
+            }
         }
     }
 
@@ -89,50 +137,87 @@ function AddMovieShowtime() {
             <h1>Tạo Lịch Chiếu</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField label="Ngày Chiếu" name="CreateOn" sx={{ width: 700 }} onChange={handleChange} />
-                    <TextField
-                        label="Thời Gian Bắt Đầu"
-                        name="startTime"
-                        onChange={handleChange}
-                        sx={{ width: 700, marginLeft: '16px' }}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={['DatePicker']}>
+                            <DatePicker
+                                label="Ngày Chiếu"
+                                value={showtime.CreateOn}
+                                onChange={handleDateChange}
+                                renderInput={(params) => <TextField {...params} sx={{ width: 400 }} />}
+                            />
+                            {errors.CreateOn && (
+                                <p style={{ color: 'red', marginTop: '15%', marginLeft: '-50%' }}>{errors.CreateOn}</p>
+                            )}
+                        </DemoContainer>
+                    </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={['MultiInputTimeRangeField']} sx={{ mt: 0, ml: 1 }}>
+                            <MultiInputTimeRangeField
+                                slotProps={{
+                                    textField: ({ position }) => ({
+                                        label: position === 'start' ? 'Từ' : 'Đến'
+                                    })
+                                }}
+                                onChange={handleTimeRangeChange}
+                            />
+                            {errors.startTime && <p style={{ color: 'red' }}>{errors.startTime}</p>}
+                            {errors.endTime && <p style={{ color: 'red' }}>{errors.endTime}</p>}
+                        </DemoContainer>
+                    </LocalizationProvider>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField label="Thời Gian Kết Thúc" name="endTime" sx={{ width: 700 }} onChange={handleChange} />
-                    <select
-                        name="cinemaHallName"
-                        onChange={handleChange}
-                        value={showtime.cinemaHallName} // Changed from cinemaHallName.cinemaHallName
-                    >
-                        <option value="" disabled>
-                        cinemaHallName
-                        </option>
-
-                        {cinemaHallName &&
-                            cinemaHallName.map((cinemaHall) => (
-                                <option key={cinemaHall.cinemaHallId} value={cinemaHall.cinemaHallId}>
-                                    {cinemaHall.cinemaHallName}{' '}
-                                    {/* Assuming cinemaHallName is the name of the cinema hall */}
-                                </option>
+                <Box style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
+                    <FormControl style={{ width: '40%' }}>
+                        <InputLabel id="demo-simple-select-label">Chọn Rạp</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            name="cinemaHallName"
+                            label="Age"
+                            onChange={handleChange}
+                        >
+                            {cinemaHallName.map((item) => (
+                                <MenuItem key={item._id} value={item.cinemaHallName}>
+                                    {item.cinemaHallName}
+                                </MenuItem>
                             ))}
-                    </select>
-                </div>
+                        </Select>
+                    </FormControl>
+                    {errors.cinemaHallName && (
+                        <p style={{ color: 'red', marginTop: '7%', marginLeft: '-35%' }}>{errors.cinemaHallName}</p>
+                    )}
+                </Box>
+                <Box sx={{ width: '20%' }}>
+                    <TextField
+                        label="Thể Loại Phim"
+                        name="typeName"
+                        sx={{ width: 360, ml: 0 }}
+                        onChange={handleChange}
+                    />
+                    {errors.typeName && (
+                        <p style={{ color: 'Red', color: 'red', marginTop: '9%', marginLeft: '-14%' }}>
+                            {errors.typeName}
+                        </p>
+                    )}
+                </Box>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField label="Thể Loại Phim" name="typeName" sx={{ width: 300 }} onChange={handleChange} />
                     <TextField
                         label="Tên Phim"
                         name="movieName"
-                        sx={{ width: 300, marginLeft: '16px' }}
+                        sx={{ width: 360, marginLeft: '2px', marginTop: '20px' }}
                         onChange={handleChange}
                     />
-                    <TextField
-                        label="Giá Ghế"
-                        name="priceSeat"
-                        sx={{ width: 300, marginLeft: '16px' }}
-                        onChange={handleChange}
-                    />
+                    {errors.movieName && (
+                        <p style={{ color: 'red', marginTop: '9%', marginLeft: '-35%' }}>{errors.movieName}</p>
+                    )}
                 </div>
-                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
+                <TextField
+                    label="Giá Ghế"
+                    name="priceSeat"
+                    sx={{ width: 360, marginLeft: '0%', marginTop: '18px' }}
+                    onChange={handleChange}
+                />
+                {errors.priceSeat && <p style={{ width: '20%', color: 'red' }}>{errors.priceSeat}</p>}
+                <Button variant="contained" type="submit" sx={{ width: 300, marginTop: '20px    ' }}>
                     Thêm Lịch Chiếu
                 </Button>
             </form>

@@ -7,16 +7,21 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
 import { handleUploadFile } from '../config/uploadImage'
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Grid from '@mui/material/Grid';
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import Select from '@mui/material/Select'
+import FormGroup from '@mui/material/FormGroup'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Checkbox from '@mui/material/Checkbox'
+import Grid from '@mui/material/Grid'
 import { Typography } from '@mui/material'
 import Swal from 'sweetalert2'
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { MultiInputTimeRangeField } from '@mui/x-date-pickers-pro/MultiInputTimeRangeField'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 function AddProduct() {
     const navigate = useNavigate()
     const [Movie, setMovie] = useState({
@@ -26,195 +31,288 @@ function AddProduct() {
         movieDescription: '',
         movieActor: '',
         movieDuration: '',
-        movieRelease: '',
+        movieRelease: null,
         movieImage: '',
         language: '',
         movieCountry: '',
         movieType: ''
-    });
-
+    })
+    const [errors, setErrors] = useState([])
     const handleChange = (e) => {
-        const nameInput = e.target.name;
-        const value = e.target.value;
-        setMovie((state) => ({ ...state, [nameInput]: value }));
-    };
+        const nameInput = e.target.name
+        const value = e.target.value
+        setMovie((state) => ({ ...state, [nameInput]: value }))
+    }
     const handleImageChange = (event) => {
         const imageFile = event.target.files[0]
-        
-        setMovie({ ...Movie,  movieImage: imageFile })
+
+        setMovie({ ...Movie, movieImage: imageFile })
     }
-    
+
+    const handleDateChange = (date) => {
+        setMovie((prevState) => ({
+            ...prevState,
+            movieRelease: date ? (date) : null  // Ensure dayjs object or null
+        }));
+    };
+
     const toBase64 = (file) => {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result.split(',')[1]); // Loại bỏ phần header của base64
-            reader.onerror = (error) => reject(error);
-        });
-    };  
-    const [movieType, setMovieType] = useState([]);
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = () => resolve(reader.result.split(',')[1]) // Loại bỏ phần header của base64
+            reader.onerror = (error) => reject(error)
+        })
+    }
+    const [movieType, setMovieType] = useState([])
 
     useEffect(() => {
-        getMovieType();
-    }, []);
+        getMovieType()
+    }, [])
 
     const getMovieType = async () => {
         try {
-            const response = await axios.get('http://localhost:4000/movie/movieType');
-            console.log(response);
-            setMovieType(response.data.allMovieType); // Đảm bảo truy cập vào response.data.allMovieType
+            const response = await axios.get('http://localhost:4000/movie/movieType')
+            console.log(response)
+            setMovieType(response.data.allMovieType) // Đảm bảo truy cập vào response.data.allMovieType
         } catch (error) {
-            console.error(error);
+            console.error(error)
         }
-    };
-    
+    }
 
     const handleSubmit = async (event) => {
-        event.preventDefault();
-    
-        try {
-            let urlImage
-            if(Movie.movieImage !== '')
-            {
-                urlImage = await handleUploadFile(Movie.movieImage)
-                setMovie({ ...Movie, movieImage: urlImage })
+        event.preventDefault()
+        let errorsSubmit = {}
+        let flag = true
+
+        if (Movie.movieName === '') {
+            errorsSubmit.movieName = 'Vui lòng nhập tên phim'
+            flag = false
+        }
+        if (Movie.movieCategory === '') {
+            errorsSubmit.movieCategory = 'Vui lòng nhập thể loại phim'
+            flag = false
+        }
+        if (Movie.movieDirector === '') {
+            errorsSubmit.movieDirector = 'Vui lòng nhập tên đạo diễn'
+            flag = false
+        }
+        if (Movie.movieDescription === '') {
+            errorsSubmit.movieDescription = 'Vui lòng nhập mô tả phim'
+            flag = false
+        }
+        if (Movie.movieActor === '') {
+            errorsSubmit.movieActor = 'Vui lòng nhập tên diễn viên'
+            flag = false
+        }
+        if (Movie.movieDuration === '') {
+            errorsSubmit.movieDuration = 'Vui lòng nhập thời lượng phim'
+            flag = false
+        }
+        if (Movie.movieRelease === '') {
+            errorsSubmit.movieRelease = 'Vui lòng nhập ngày ra mắt'
+            flag = false
+        }
+        if (Movie.language === '') {
+            errorsSubmit.language = 'Vui lòng nhập ngôn ngữ/ phụ đề phim'
+            flag = false
+        }
+        if (Movie.movieCountry === '') {
+            errorsSubmit.movieCountry = 'Vui lòng nhập quốc gia phim'
+            flag = false
+        }
+        if (Movie.movieImage === 0 ) {
+            errorsSubmit.movieImage = 'Vui lòng chọn ảnh';
+            flag = false;
+        } else {
+            let size = Movie.movieImage.size;
+            let name = Movie.movieImage.name;
+            if (!name) {
+                errorsSubmit.movieImage = 'Vui lòng chọn ảnh có định dạng hợp lệ';
+                flag = false;
+            } else {
+                let ext = name.split('.').pop();
+                let arrayExt = ['png', 'jpg', 'jpeg'];
+                if (!arrayExt.includes(ext)) {
+                    errorsSubmit.movieImage = "Chỉ được upload file 'png', 'jpg', 'jpeg'";
+                    setMovie({ ...Movie, movieImage: '' });
+                    flag = false;
+                } else if (size > 1024 * 1024) {
+                    errorsSubmit.movieImage = 'File quá lớn (tối đa 1MB)';
+                    flag = false;
+                }
             }
-            const formattedDate = format(new Date(Movie.movieRelease), 'yyyy-MM-dd');
-            const formData = {
-                movieName: Movie.movieName,
-                movieCategory: Movie.movieCategory,
-                movieDescription: Movie.movieDescription,
-                movieDirector: Movie.movieDirector,
-                movieActor: Movie.movieActor,
-                movieImage: urlImage, // Sử dụng đường dẫn của ảnh từ server
-                movieDuration: parseInt(Movie.movieDuration),
-                movieRelease: formattedDate,
-                language: Movie.language,
-                country: Movie.movieCountry,
-                movieType: selected // Thêm trường movieType vào formData
-            };
-    
-            const response = await axios.post('http://localhost:4000/movie/add-movie', formData);
-            console.log(response);
-           Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Thêm phim thành công'
-            });
-            navigate('/products');
-        } catch (error) {
-            console.error(error);
+        }
+        
+        let urlImage
+        if (Movie.movieImage !== '') {
+            urlImage = await handleUploadFile(Movie.movieImage)
+            setMovie({ ...Movie, movieImage: urlImage })
+        }
+
+        if (!flag) {
+            setErrors(errorsSubmit)
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
                 text: 'Thêm phim thất bại'
-            });
+            })
+        } else {
+            setErrors({})
+           
+            try {
+                
+                const formData = {
+                    movieName: Movie.movieName,
+                    movieCategory: Movie.movieCategory,
+                    movieDirector: Movie.movieDirector,
+                    movieDescription: Movie.movieDescription,
+                    movieActor: Movie.movieActor,
+                    movieDuration: Movie.movieDuration,
+                    movieRelease: Movie.movieRelease,
+                    movieImage: urlImage,
+                    language: Movie.language,
+                    movieCountry: Movie.movieCountry,
+                    movieType: selected
+                }
+                console.log(formData)
+                const response = await axios.post('http://localhost:4000/movie/add-movie', formData)
+                console.log(response)
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Thêm phim thành công'
+                })
+                navigate('/products')
+            } catch (error) {
+                console.error(error)
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Thêm phim thất bại'
+                })
+            }
         }
-    };
-    
-    
-    const [selected, setSelected] = useState([]);
+    }
+
+    const [selected, setSelected] = useState([])
     const handleCheckboxChange = (event, id) => {
         if (event.target.checked) {
-            setSelected([...selected, id]);
+            setSelected([...selected, id])
         } else {
-            setSelected(selected.filter((selectedId) => selectedId !== id));
+            setSelected(selected.filter((selectedId) => selectedId !== id))
         }
-    
+
         // Sử dụng hàm callback để in ra state selected sau khi nó được cập nhật
         setSelected((prevSelected) => {
-            console.log(prevSelected);
-            return prevSelected;
-        });
-    };
-    
+            console.log(prevSelected)
+            return prevSelected
+        })
+    }
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Add Product</h1>
+            <h1>Add Phim</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField label="Movie Name" name="movieName" sx={{ width: 700 }} onChange={handleChange} />
+                    <TextField label="Tên Phim" name="movieName" sx={{ width: 700 }} onChange={handleChange} />
+                    {errors.movieName && <p style={{ color: 'red' }}>{errors.movieName}</p>}
                     <TextField
-                        label="Movie Category"
+                        label="Thể Loại Phim"
                         name="movieCategory"
                         onChange={handleChange}
                         sx={{ width: 700, marginLeft: '16px' }}
                     />
+                    {errors.movieCategory && <p style={{ color: 'red' }}>{errors.movieCategory}</p>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
-                        label="Movie Director"
+                        label="Đạo Diễn"
                         name="movieDirector"
                         sx={{ width: 300 }}
                         onChange={handleChange}
                     />
+                    {errors.movieDirector && <p style={{ color: 'red' }}>{errors.movieDirector}</p>}
                     <TextField
-                        label="Movie Actor"
+                        label="Diễn Viên"
                         name="movieActor"
                         sx={{ width: 300, marginLeft: '16px' }}
                         onChange={handleChange}
                     />
+                    {errors.movieActor && <p style={{ color: 'red' }}>{errors.movieActor}</p>}
                     <TextField
-                        label="Movie Duration"
+                        label="Thời Lượng Phim"
                         name="movieDuration"
                         sx={{ width: 300, marginLeft: '16px' }}
                         onChange={handleChange}
                     />
+                    {errors.movieDuration && <p style={{ color: 'red' }}>{errors.movieDuration}</p> }
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
-                        label="Movie Description"
+                        label="Mô Tả Phim"
                         name="movieDescription"
                         sx={{ width: 400 }}
                         onChange={handleChange}
                     />
-                    <TextField
-                        label="Movie Release"
-                        name="movieRelease"
-                        sx={{ width: 300, marginLeft: '16px' }}
-                        onChange={handleChange}
-                    />
+                    {errors.movieDescription && <p style={{ color: 'red' }}>{errors.movieDescription}</p>}  
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DemoContainer components={['DatePicker']}>
+                            <DatePicker
+                                label="Ngày ra mắt"
+                                value={Movie.movieRelease}
+                                onChange={handleDateChange}
+                                renderInput={(params) => <TextField {...params} sx={{ width: 400 }} />}
+                            />
+                            {errors.movieRelease && (
+                                <p style={{ color: 'red', marginTop: '15%', marginLeft: '-50%' }}>{errors.movieRelease}</p>
+                            )}
+                        </DemoContainer>
+                    </LocalizationProvider>
+                    {errors.movieRelease && <p style={{ color: 'red' }}>{errors.movieRelease}</p>}
                 </div>
                 <div>
-                <TextField
-                    label="Movie Language"
-                    name="language"
-                    onChange={handleChange}
-                    margin="normal"
-                    sx={{ width: 400 }}
-                />
-                <TextField
-                    label="Movie Country"
-                    name="movieCountry"
-                    onChange={handleChange}
-                    margin="normal"
-                    sx={{ width: 300, marginLeft: '16px' }}
-                />
+                    <TextField
+                        label="Ngôn Ngữ/ Phụ Đề Phim"
+                        name="language"
+                        onChange={handleChange}
+                        margin="normal"
+                        sx={{ width: 400 }}
+                    />
+                    {errors.language && <p style={{ color: 'red' }}>{errors.language}</p>}
+                    <TextField
+                        label="Quốc Gia Phim"
+                        name="movieCountry"
+                        onChange={handleChange}
+                        margin="normal"
+                        sx={{ width: 300, marginLeft: '16px' }}
+                    />
+                    {errors.movieCountry && <p style={{ color: 'red' }}>{errors.movieCountry}</p>}
                 </div>
-            
+
                 <FormGroup sx={{ width: 400 }}>
-            <Typography variant="h6" gutterBottom>
-                Loại phim
-            </Typography>
-            <Grid container spacing={1}>
-                {movieType.map((type) => (
-                    <Grid item key={type.movieTypeId}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={selected.includes(type.movieTypeId)}
-                                    onChange={(event) => handleCheckboxChange(event, type.movieTypeId)}
+                    <Typography variant="h6" gutterBottom>
+                        Loại phim
+                    </Typography>
+                    <Grid container spacing={1}>
+                        {movieType.map((type) => (
+                            <Grid item key={type.movieTypeId}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={selected.includes(type.movieTypeId)}
+                                            onChange={(event) => handleCheckboxChange(event, type.movieTypeId)}
+                                        />
+                                    }
+                                    label={type.typeName}
                                 />
-                            }
-                            label={type.typeName}
-                        />
+                            </Grid>
+                        ))}
                     </Grid>
-                ))}
-            </Grid>
-        </FormGroup>
+                </FormGroup>
 
                 <input type="file" name="movieImage" onChange={handleImageChange} style={{ marginBottom: '16px' }} />
+                {errors.movieImage && <p style={{ color: 'red' }}>{errors.movieImage}</p>}
                 <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
                     Add Product
                 </Button>

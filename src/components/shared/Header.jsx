@@ -6,6 +6,8 @@ import classNames from 'classnames'
 import axios from 'axios'
 import Customer_detail from '../../pages/Customer_detail'
 import SearchIcon from '@mui/icons-material/Search';
+import Cookies from 'js-cookie'
+import { Link } from 'react-router-dom'
 export default function Header() {
     const navigate = useNavigate()
 	const [searchTerm, setSearchTerm] = useState('');
@@ -38,6 +40,46 @@ export default function Header() {
 		setShowResults(false);
 
     }
+
+
+    function renderLogin() {
+        const Token = Cookies.get("Token");
+    
+        if (Token) {
+          return (
+            <>
+               <Menu.Item>
+                                {({ active }) => (
+                                    <div
+                                        className={classNames(
+                                            active && 'bg-gray-100',
+                                            'active:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 cursor-pointer focus:bg-gray-200'
+                                        )}
+                                    >
+                                          <a className="ctive:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 cursor-pointer focus:bg-gray-200" onClick={logout}>
+              Thoát
+            </a>
+                                    </div>
+                                )}
+                            </Menu.Item>
+            </>
+          );
+        } else {
+          return (
+            <div className="position-relative">
+              <Link to={"/register"} width={170} className="sc-eDWCr kzpCjd">
+                Đăng Nhập
+              </Link>
+            </div>
+          );
+        }
+      }
+      function logout() {
+        Cookies.remove("Token");
+        
+    
+        navigate("/register");
+      }
     return (
         <div className="bg-white h-16 px-4 flex items-center border-b border-gray-200 justify-between">
        <div className="relative">
@@ -181,18 +223,7 @@ export default function Header() {
                                     </div>
                                 )}
                             </Menu.Item>
-                            <Menu.Item>
-                                {({ active }) => (
-                                    <div
-                                        className={classNames(
-                                            active && 'bg-gray-100',
-                                            'active:bg-gray-200 rounded-sm px-4 py-2 text-gray-700 cursor-pointer focus:bg-gray-200'
-                                        )}
-                                    >
-                                        Sign out
-                                    </div>
-                                )}
-                            </Menu.Item>
+                           {renderLogin()}
                         </Menu.Items>
                     </Transition>
                 </Menu>

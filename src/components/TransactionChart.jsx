@@ -5,6 +5,16 @@ import axios from 'axios';
 export default function TransactionChart() {
   const [transactionData, setTransactionData] = useState([]);
 
+
+  const menu = JSON.parse(localStorage.getItem('bookingData')) || []
+
+  const renderMenu = Object.keys(menu).map((key) => {
+   let id = menu[key].bookingId
+  //  console.log(id);
+   localStorage.setItem('bookingId', JSON.stringify(id))
+  })
+
+  
   useEffect(() => {
     // Mock data creation
     const mockData = generateMockData();
@@ -13,6 +23,7 @@ export default function TransactionChart() {
 
   // Function to generate mock data
   const generateMockData = () => {
+    const data = JSON.parse(localStorage.getItem('bookingId')) || []
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     return months.map((month) => ({

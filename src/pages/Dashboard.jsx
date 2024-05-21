@@ -13,6 +13,7 @@ export default function Dashboard() {
 				<TransactionChart />
 				
 			</div>
+				
 			
 		</div>
 	)
