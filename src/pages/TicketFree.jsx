@@ -5,17 +5,28 @@ import { Pagination } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add' // Import AddIcon component from Material-UI
 import MenuItem from '@mui/material/MenuItem'
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
-
+import Cookies from 'js-cookie'
 function TicketFree() {
     const [ticketData, setTicketData] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState(5)
     const [anchorEl, setAnchorEl] = useState(null)
     const navigate = useNavigate()
+    
+    const Token = Cookies.get('Token')
 
+   
+    const config = {
+
+        headers: {
+            Authorization: `Bearer ${Token}`
+        }
+    }
+
+    const url = 'http://localhost:4000/promotion/allPromo'
     useEffect(() => {
         axios
-            .get('http://localhost:4000/promotion/allPromo')
+            .get(url, config)
             .then((response) => {
                 console.log(response)
                 setTicketData(response.data.data.allPromo)

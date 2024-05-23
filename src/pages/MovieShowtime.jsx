@@ -4,19 +4,33 @@ import axios from 'axios';
 import { Pagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, MenuItem } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-
+import Cookies from 'js-cookie';
 function MovieShowtime() {
   const [showtime, setShowtime] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [anchorEl, setAnchorEl] = useState(null);
   const [CreateOn, setCreateOn] = useState("");
-
+console.log(CreateOn);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const Token = Cookies.get('Token');
+
+  const config = {
+
+    headers: {
+        Authorization: `Bearer ${Token}`
+    }
+}
+
+
+
+  const url = 'http://localhost:4000/show/allShow'; // Define the URL for the API call
+
+useEffect(() => {
     axios
-      .get('http://localhost:4000/show/allShow', {
+      .get(url, {
+        ...config,
         params: {
           CreateOn: CreateOn
         }

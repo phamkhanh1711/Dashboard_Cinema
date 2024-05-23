@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Pagination } from '@mui/material'
-
+import Cookies from 'js-cookie'
 import AddIcon from '@mui/icons-material/Add' // Import AddIcon component from Material-UI
 
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -15,14 +15,14 @@ import IconButton from '@mui/material/IconButton'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import Swal from 'sweetalert2'
 import UpdateIcon from '@mui/icons-material/Update'
-import Cookies from 'js-cookie'
+
 function Products() {
     const [recentOrderData, setRecentOrderData] = useState([])
-    const [paymentStatus, setPaymentStatus] = useState({})
+
     const [currentPage, setCurrentPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState(5)
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [Foods, setFoods] = useState([])
+    const [anchorEl, setAnchorEl] = useState(null)
+    const [selectedMovieId, setSelectedMovieId] = useState(null)
 
     const navigate = useNavigate()
     const handleChangePage = (event, newPage) => {
@@ -34,15 +34,21 @@ function Products() {
         setCurrentPage(1)
     }
 
-    const handleChange = (event, orderId) => {
-        setPaymentStatus({ ...paymentStatus, [orderId]: event.target.value })
+   const Token = Cookies.get('Token')
+
+    const config = {
+
+        headers: {
+            Authorization: `Bearer ${Token}`
+        }
     }
+
 
     const url = 'http://localhost:4000/movie/all-movie'
 
     useEffect(() => {
         axios
-            .get(url)
+            .get(url,config)
             .then((res) => {
                 console.log(res)
                 setRecentOrderData(res.data)
@@ -52,107 +58,49 @@ function Products() {
             })
     }, [])
 
-    const config = {
-        headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
-    }
-
-    useEffect(() => {
-        axios
-            .get('http://localhost:4000/food/all-Food')
-            .then((response) => {
-                console.log(response)
-                setFoods(response.data)
-            })
-            .catch((error) => {
-                console.error('Error fetching user data:', error)
-            })
-    }, [])
-
-    const handleMenuOpen = (event) => {
+    const handleMenuOpen = (event, movieId) => {
         setAnchorEl(event.currentTarget)
+        setSelectedMovieId(movieId)
     }
 
     const handleMenuClose = () => {
         setAnchorEl(null)
+        setSelectedMovieId(null)
     }
 
-    const handleEdit = (movieId) => {
-        console.log(movieId)
-        // Handle edit action
-        console.log('detail product:')
-        navigate(`/propduct_detail/${movieId}`)
+    const handleEdit = () => {
+        console.log(selectedMovieId)
+        navigate(`/propduct_detail/${selectedMovieId}`)
         handleMenuClose()
     }
 
-    const handleEditt = (foodId) => {
-        console.log(foodId)
-        // Handle edit action
-        console.log('food detail')
-        navigate(`/food_detail/${foodId}`)
-        handleMenuClose()
+    const handleDelete = () => {
+        console.log(selectedMovieId)
+        const deleteUrl = `http://localhost:4000/movie/delete-movie/${selectedMovieId}`
+        axios
+            .delete(deleteUrl)
+            .then((res) => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Delete product successfully'
+                })
+                setRecentOrderData(recentOrderData.filter((order) => order.movieId !== selectedMovieId))
+                handleMenuClose()
+            })
+            .catch((error) => {
+                console.log(error)
+            })
     }
-
-    const handleDelete = (movieId) => {
-        console.log(movieId)
-        const deleteUrl = `http://localhost:4000/movie/delete-movie/${movieId}`
-        console.log(deleteUrl)
-         axios
-             .delete(deleteUrl)
-             .then((res) => {
-                 console.log(res)
-                 Swal.fire({
-                     icon: 'success',
-                     title: 'Success',
-                     text: 'Delete product successfully'
-                 })
-                 setRecentOrderData(recentOrderData.filter((order) => order.movieId !== movieId))
-             })
-             .catch((error) => {
-                 console.log(error)
-             })
-    }
-
-    // const handleDeletee = (foodId) => {
-    //     // const config = {
-    //     //     headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
-    //     // }
-    //     // console.log(foodId)
-    //     // const deleteUrl = `http://localhost:4000/food/delete/${foodId}`
-    //     // console.log(deleteUrl)
-    //     // axios
-    //     //     .delete(deleteUrl, config)
-    //     //     .then((res) => {
-    //     //         console.log(res)
-    //     //         Swal.fire({
-    //     //             icon: 'success',
-    //     //             title: 'Success',
-    //     //             text: 'Delete product successfully'
-    //     //         })
-    //     //         setFoods(Foods.filter((food) => food.foodId !== foodId))
-    //     //     })
-    //     //     .catch((error) => {
-    //     //         console.log(error)
-    //     //     })
-    // }
 
     const handleAdd = () => {
-        // Handle add action
-        console.log('Add product')
         navigate('/add')
         handleMenuClose()
     }
 
-    const handleAddd = () => {
-        // Handle add action
-        console.log('Add product food')
-        navigate('/addd')
-        handleMenuClose()
-    }
     const indexOfLastRow = currentPage * rowsPerPage
     const indexOfFirstRow = indexOfLastRow - rowsPerPage
     const currentRows = recentOrderData.slice(indexOfFirstRow, indexOfLastRow)
-
-    const foodRows = Foods.slice(indexOfFirstRow, indexOfLastRow)
 
     return (
         <>
@@ -169,6 +117,7 @@ function Products() {
                                 <th>Đạo Diễn</th>
                                 <th>Thời Lượng</th>
                                 <th>Sản Xuất</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -186,42 +135,38 @@ function Products() {
                                             style={{ maxWidth: '50px', maxHeight: '50px' }}
                                         />
                                     </td>
-
                                     <td>{order.movieDirector}</td>
                                     <td>{order.movieDuration} Phút</td>
                                     <td>{order.country}</td>
-
                                     <td>
-    <IconButton
-        aria-label="more"
-        aria-controls="product-menu"
-        aria-haspopup="true"
-        onClick={handleMenuOpen}
-    >
-        <MoreVertIcon />
-    </IconButton>
-    <Menu
-        id="product-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-    >
-        <MenuItem onClick={() => handleDelete(order.movieId)}>
-            <DeleteIcon />
-            Delete
-        </MenuItem>
-        <MenuItem onClick={() => handleEdit(order.movieId)}>
-            <UpdateIcon />
-            Update
-        </MenuItem>
-    </Menu>
-</td>
-
+                                        <IconButton
+                                            aria-label="more"
+                                            aria-controls="product-menu"
+                                            aria-haspopup="true"
+                                            onClick={(event) => handleMenuOpen(event, order.movieId)}
+                                        >
+                                            <MoreVertIcon />
+                                        </IconButton>
+                                        <Menu
+                                            id="product-menu"
+                                            anchorEl={anchorEl}
+                                            keepMounted
+                                            open={Boolean(anchorEl)}
+                                            onClose={handleMenuClose}
+                                        >
+                                            <MenuItem onClick={handleEdit}>
+                                                <UpdateIcon />
+                                                Update
+                                            </MenuItem>
+                                            <MenuItem onClick={handleDelete}>
+                                                <DeleteIcon />
+                                                Delete
+                                            </MenuItem>
+                                        </Menu>
+                                    </td>
                                 </tr>
                             ))}
-
-                            <MenuItem onClick={handleAdd}>
+                                <MenuItem onClick={handleAdd}>
                                 <AddIcon /> Add
                             </MenuItem>
                         </tbody>
@@ -232,13 +177,9 @@ function Products() {
                         count={Math.ceil(recentOrderData.length / rowsPerPage)}
                         page={currentPage}
                         onChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onChangeRowsPerPage={handleChangeRowsPerPage}
                     />
                 </div>
             </div>
-
-          
         </>
     )
 }

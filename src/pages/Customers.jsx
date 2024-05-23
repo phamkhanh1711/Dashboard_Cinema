@@ -24,26 +24,8 @@ import { visuallyHidden } from '@mui/utils'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import axios from 'axios'
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'
 import { useNavigate } from 'react-router-dom'
-function createData(userId, fullName, email, phoneNumber, gia) {
-    return {
-        userId,
-        fullName,
-        email,
-        phoneNumber,
-        gia,
-       
-    }
-}
-
-// Hàm để lấy ngày tháng năm hiện tại
-function getCurrentMonthYear() {
-    const now = new Date();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
-    return `${month}/${year}`;
-}
 
 function descendingComparator(a, b, orderBy) {
     if (b[orderBy] < a[orderBy]) {
@@ -60,7 +42,6 @@ function getComparator(order, orderBy) {
         ? (a, b) => descendingComparator(a, b, orderBy)
         : (a, b) => -descendingComparator(a, b, orderBy)
 }
-
 
 function stableSort(array, comparator) {
     const stabilizedThis = array.map((el, index) => [el, index])
@@ -99,9 +80,8 @@ const headCells = [
         disablePadding: false,
         label: 'Phone Number'
     },
-
     {
-        id: 'Gia',
+        id: 'Price',
         numeric: true,
         disablePadding: false,
         label: 'Tổng Tiền'
@@ -208,124 +188,109 @@ EnhancedTableToolbar.propTypes = {
 }
 
 export default function Customers() {
-    const [order, setOrder] = React.useState('asc');
-    const [orderBy, setOrderBy] = React.useState('calories');
-    const [selected, setSelected] = React.useState([]);
-    const [page, setPage] = React.useState(0);
-    const [dense, setDense] = React.useState(false);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
-    const [rows, setRows] = useState([]);
-    const [currentMonthYear, setCurrentMonthYear] = useState(getCurrentMonthYear()); // Lưu tháng và năm hiện tại
-   
-  
+    const [order, setOrder] = React.useState('asc')
+    const [orderBy, setOrderBy] = React.useState('userId')
+    const [selected, setSelected] = React.useState([])
+    const [page, setPage] = React.useState(0)
+    const [dense, setDense] = React.useState(false)
+    const [rowsPerPage, setRowsPerPage] = React.useState(5)
+    const [rows, setRows] = useState([])
+    const [totalRevenue, setTotalRevenue] = useState(0)
+    const navigate = useNavigate()
+
     const config = {
         headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
-    };
-    const navigate = useNavigate()
-    useEffect(() => {   
-        axios.get('http://localhost:4000/user/allUser', config)
+    }
+
+    useEffect(() => {
+        axios
+            .get('http://localhost:4000/user/allUser', config)
             .then((response) => {
-                console.log(response);
-                setRows(response.data.data);
+                console.log(response)
+                const users = response.data.data.users
+
+                let alltotalRevenue = 0
+                users.forEach((user) => {
+                    alltotalRevenue += user.Price
+                })
+                console.log(alltotalRevenue)
+                setTotalRevenue(alltotalRevenue)
+
+                localStorage.setItem('alltotalRevenue', JSON.stringify(alltotalRevenue))
+
+                setRows(users)
             })
             .catch((error) => {
-                console.error("Error fetching user data:", error);
-            });
-    }, []);
-    
+                console.error('Error fetching user data:', error)
+            })
+    }, [])
 
-   
-    
-
-const calculateMonthlyRevenue = (monthYear) => {
-        return rows.reduce((total, row) => {
-            if (row.ngayThangNam === monthYear) {
-                return total + row.gia;
-            }
-            return total;
-        }, 0);
-    };  
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc'
         setOrder(isAsc ? 'desc' : 'asc')
         setOrderBy(property)
     }
-    const [numSelected, setNumSelected] = React.useState(0);
+
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelected = rows.map((n) => n.userId);
-            setSelected(newSelected);
-            setNumSelected(newSelected.length);
-            console.log(newSelected); // Di chuyển console.log vào đây
-        } else {
-            setSelected([]);
-            setNumSelected(0);
+            const newSelected = rows.map((n) => n.userId)
+            setSelected(newSelected)
+            return
         }
-        
-    };
-        
-   
+        setSelected([])
+    }
+
     const handledetail = (userId) => {
-        navigate(`/customers_detail/${userId}`);
+        navigate(`/customers_detail/${userId}`)
     }
+
     const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
+        const selectedIndex = selected.indexOf(id)
+        let newSelected = []
 
-    if (selectedIndex === -1) {
-        // Nếu ID không tồn tại trong mảng selected, thêm nó vào mảng
-        newSelected = [...selected, id];
-    } else {
-        // Nếu ID đã tồn tại trong mảng selected, loại bỏ nó khỏi mảng
-        newSelected = selected.filter((item) => item !== id);
+        if (selectedIndex === -1) {
+            newSelected = newSelected.concat(selected, id)
+        } else if (selectedIndex === 0) {
+            newSelected = newSelected.concat(selected.slice(1))
+        } else if (selectedIndex === selected.length - 1) {
+            newSelected = newSelected.concat(selected.slice(0, -1))
+        } else if (selectedIndex > 0) {
+            newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1))
+        }
+
+        setSelected(newSelected)
     }
 
-    setSelected(newSelected);
-    console.log(newSelected);
-};
-
-    
     const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
+        setPage(newPage)
+    }
 
     const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
+        setRowsPerPage(parseInt(event.target.value, 10))
+        setPage(0)
+    }
 
     const handleChangeDense = (event) => {
-        setDense(event.target.checked);
-    };
+        setDense(event.target.checked)
+    }
 
-    const isSelected = (id) => selected.indexOf(id) !== -1;
+    const isSelected = (id) => selected.indexOf(id) !== -1
 
-    // Truyền ID vào handleClick khi checkbox thay đổi trạng thái
-    const handleCheckboxChange = (event, id) => {
-        handleClick(event, id);
-    };
-
-    // Hãy đảm bảo rằng rows đã được định nghĩa
-    // và bạn đã import stableSort và getComparator từ một nơi khác
-
-    const emptyRows =
-        page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
 
     const visibleRows = React.useMemo(
         () =>
-            stableSort(rows, getComparator(order, orderBy)).slice(
-                page * rowsPerPage,
-                page * rowsPerPage + rowsPerPage
-            ),
-        [order, orderBy, page, rowsPerPage]
-    );
+            stableSort(rows, getComparator(order, orderBy)).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+        [order, orderBy, page, rowsPerPage, rows]
+    )
+
     return (
         <Box sx={{ width: '100%' }}>
-             <Typography variant="h6" id="tableTitle" component="div">
-                Doanh Thu Tháng {currentMonthYear}
+            <Typography variant="h6" id="tableTitle" component="div">
+                Doanh Thu Tháng {new Date().getMonth() + 1}/{new Date().getFullYear()}
             </Typography>
             <Paper sx={{ width: '100%', mb: 2 }}>
-            <TableContainer>
+                <TableContainer>
                     <Table>
                         <TableHead>
                             <TableRow>
@@ -335,8 +300,10 @@ const calculateMonthlyRevenue = (monthYear) => {
                         </TableHead>
                         <TableBody>
                             <TableRow>
-                                <TableCell>{currentMonthYear}</TableCell>
-                                <TableCell>{calculateMonthlyRevenue(currentMonthYear)}</TableCell>
+                                <TableCell>
+                                    {new Date().getMonth() + 1}/{new Date().getFullYear()}
+                                </TableCell>
+                                <TableCell>{totalRevenue}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -352,59 +319,51 @@ const calculateMonthlyRevenue = (monthYear) => {
                             onRequestSort={handleRequestSort}
                             rowCount={rows.length}
                         />
-                       <TableBody>
-    {Array.isArray(rows) && rows.map((row, index) => {
-        const isItemSelected = isSelected(row.id)
-        const labelId = `enhanced-table-checkbox-${index}`
+                        <TableBody>
+                            {visibleRows.map((row, index) => {
+                                const isItemSelected = isSelected(row.userId)
+                                const labelId = `enhanced-table-checkbox-${index}`
 
-        return (
-            <TableRow
-           
-
-            
-            onClick={(event) => {
-                
-                handleClick(event, row.userId);
-            }}
-            role="checkbox"
-            aria-checked={isItemSelected}
-            tabIndex={-1}
-            key={row.userId} // Đổi từ `id` thành `userId`
-            selected={isItemSelected}
-            sx={{ cursor: 'pointer' }}
-        >
-            <TableCell padding="checkbox">
-                <Checkbox
-                    color="primary"
-                    checked={isItemSelected}
-                    inputProps={{
-                        'aria-labelledby': labelId
-                    }}
-                    id={labelId} // Thêm id vào đây
-                />
-            </TableCell>
-            <TableCell component="th" id={labelId} scope="row" padding="none">
-                {row.userId}
-            </TableCell>
-            <TableCell align="right">{row.fullName}</TableCell>
-            <TableCell align="right">{row.email}</TableCell>
-            <TableCell align="right">{row.phoneNumber}</TableCell>
-            <TableCell align="right">{row.protein}</TableCell>
-        </TableRow>
-        
-        )
-    })}
-    {emptyRows > 0 && (
-        <TableRow
-            style={{
-                height: (dense ? 33 : 53) * emptyRows
-            }}
-        >
-            <TableCell colSpan={6} />
-        </TableRow>
-    )}
-</TableBody>
-
+                                return (
+                                    <TableRow
+                                        hover
+                                        onClick={(event) => handledetail(row.userId)}
+                                        role="checkbox"
+                                        aria-checked={isItemSelected}
+                                        tabIndex={-1}
+                                        key={row.userId}
+                                        selected={isItemSelected}
+                                    >
+                                        <TableCell padding="checkbox">
+                                            <Checkbox
+                                                color="primary"
+                                                checked={isItemSelected}
+                                                onClick={(event) => handleClick(event, row.userId)}
+                                                inputProps={{
+                                                    'aria-labelledby': labelId
+                                                }}
+                                            />
+                                        </TableCell>
+                                        <TableCell component="th" id={labelId} scope="row" padding="none">
+                                            {row.userId}
+                                        </TableCell>
+                                        <TableCell align="right">{row.fullName}</TableCell>
+                                        <TableCell align="right">{row.email}</TableCell>
+                                        <TableCell align="right">{row.phoneNumber}</TableCell>
+                                        <TableCell align="right">{row.Price}</TableCell>
+                                    </TableRow>
+                                )
+                            })}
+                            {emptyRows > 0 && (
+                                <TableRow
+                                    style={{
+                                        height: (dense ? 33 : 53) * emptyRows
+                                    }}
+                                >
+                                    <TableCell colSpan={6} />
+                                </TableRow>
+                            )}
+                        </TableBody>
                     </Table>
                 </TableContainer>
                 <TablePagination

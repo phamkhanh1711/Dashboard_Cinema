@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import Autocomplete from '@mui/material/Autocomplete'
 import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
 import { format } from 'date-fns'
-import { Movie } from '@mui/icons-material'
+import { PieChart } from '@mui/x-charts/PieChart'
+
+
 function Product_detail() {
     const navigate = useNavigate()
     const params = useParams()
@@ -46,12 +47,38 @@ function Product_detail() {
                 console.log(err)
             })
     }, [params.movieId])
+
+    const [sentiment, setSentiment] = useState(null)
+    const [tichcuc, setTichcuc] = useState(0)
+    const [tieucuc, setTieucuc] = useState(0)
+
+    useEffect(() => {
+        axios
+            .get(`http://localhost:4000/comment/percent-sentiment/${params.movieId}`)
+            .then((res) => {
+                console.log(res)
+                const data = res.data.data
+                setSentiment({
+                    percent_pos: parseInt(data.percent_pos),
+                    percent_neg: parseInt(data.percent_neg)
+                })
+                const tichcuc = parseInt(data.percent_neg)
+                const tieucuc = parseInt(data.percent_pos)
+                setTichcuc(tichcuc)
+                setTieucuc(tieucuc)
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+    }, [params.movieId])
+
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         })
     }
+
     const handleSubmit = (e) => {
         e.preventDefault()
         const formattedDate = format(new Date(formData.movieRelease), 'yyyy-MM-dd')
@@ -82,7 +109,7 @@ function Product_detail() {
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Edit Product</h1>
+            <h1> Cập Nhật Phim</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
@@ -155,8 +182,25 @@ function Product_detail() {
                     margin="normal"
                     sx={{ width: 300 }}
                 />
-                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
-                    Edit Product
+                {sentiment && (
+                    <div style={{ display: 'flex', flexDirection: 'row', marginTop: '2%', marginLeft: '25%' }}>
+                        <PieChart
+                            style={{ color: 'red' }}
+                            series={[
+                                {
+                                    data: [
+                                        { id: 'Positive', value: tieucuc, label: '%Tích Cực' },
+                                        { id: 'Negative', value: tichcuc, label: '%Tiêu Cực', color: '#ff9800' }
+                                    ]
+                                }
+                            ]}
+                            width={400}
+                            height={200}
+                        />
+                    </div>
+                )}
+                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop: '-20%' }}>
+                    Cập Nhật Phim
                 </Button>
             </form>
         </Box>

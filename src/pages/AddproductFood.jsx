@@ -25,14 +25,13 @@ function AddproductFood() {
 
     const handleImageChange = (event) => {
         const imageFile = event.target.files[0]
-        
-        setFood({ ...Food,  foodImage: imageFile })
+
+        setFood({ ...Food, foodImage: imageFile })
     }
     const handleSubmit = async (event) => {
         event.preventDefault()
         let errorsSubmit = {}
         let flag = true
-
 
         if (Food.foodName === '') {
             errorsSubmit.foodName = 'Tên đồ ăn không được để trống'
@@ -41,56 +40,51 @@ function AddproductFood() {
         if (Food.foodPrice === '') {
             errorsSubmit.foodPrice = 'Giá tiền không được để trống'
             flag = false
-        }   
+        }
 
         if (Food.foodImage === 0) {
             errorsSubmit.foodImage = 'Hình ảnh không được để trống'
             flag = false
-        }
-        else {
-            let size = Food.foodImage.size;
-            let name = Food.foodImage.name;
+        } else {
+            let size = Food.foodImage.size
+            let name = Food.foodImage.name
             if (!name) {
-                errorsSubmit.foodImage = 'Vui lòng chọn ảnh có định dạng hợp lệ';
-                flag = false;
+                errorsSubmit.foodImage = 'Vui lòng chọn ảnh có định dạng hợp lệ'
+                flag = false
             } else {
-                let ext = name.split('.').pop();
-                let arrayExt = ['png', 'jpg', 'jpeg'];
+                let ext = name.split('.').pop()
+                let arrayExt = ['png', 'jpg', 'jpeg']
                 if (!arrayExt.includes(ext)) {
-                    errorsSubmit.foodImage = "Chỉ được upload file 'png', 'jpg', 'jpeg'";
-                    setFood({ ...Food, foodImage: '' });
-                    flag = false;
+                    errorsSubmit.foodImage = "Chỉ được upload file 'png', 'jpg', 'jpeg'"
+                    setFood({ ...Food, foodImage: '' })
+                    flag = false
                 } else if (size > 1024 * 1024) {
-                    errorsSubmit.foodImage = 'File quá lớn (tối đa 1MB)';
-                    flag = false;
+                    errorsSubmit.foodImage = 'File quá lớn (tối đa 1MB)'
+                    flag = false
                 }
             }
         }
 
-        
-        let urlImage 
-        if(Food.foodImage !== '')
-        {
-             urlImage = await handleUploadFile(Food.foodImage)
+        let urlImage
+        if (Food.foodImage !== '') {
+            urlImage = await handleUploadFile(Food.foodImage)
             setFood({ ...Food, foodImage: urlImage })
         }
 
-        if(!flag)
-        {
+        if (!flag) {
             setErrors(errorsSubmit)
             alert('Vui lòng kiểm tra lại thông tin')
             return
-        }   
-        else {
+        } else {
             setErrors({})
             const formData = {
                 foodName: Food.foodName,
                 foodPrice: Food.foodPrice,
                 foodImage: urlImage
             }
-           
+
             const Token = Cookies.get('Token')
-    
+
             // Khai báo các thông tin header
             const config = {
                 headers: {
@@ -98,9 +92,9 @@ function AddproductFood() {
                     'Content-Type': 'application/json' // Xác định kiểu dữ liệu của yêu cầu
                 }
             }
-    
+
             const url = 'http://localhost:4000/food/add-food'
-    
+
             try {
                 const response = await axios.post(url, formData, config) // Truyền config vào axios.post
                 console.log(response) // In ra dữ liệu trả về từ API
@@ -113,18 +107,15 @@ function AddproductFood() {
                 navigate('/food')
             } catch (error) {
                 console.error(error)
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Thêm food thất bại',
-                        showConfirmButton: false,
-                        timer: 1500
-                    })
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Thêm food thất bại',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
             }
-
-       
         }
     }
-
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
@@ -143,12 +134,12 @@ function AddproductFood() {
                 </div>
 
                 {/* <input type="file" name="foodImage" onChange={handleImageChange} style={{ marginBottom: '16px' }} /> */}
-                <Button variant="contained" component="label" sx={{ width: 150, marginTop:"2%" }}>
+                <Button variant="contained" component="label" sx={{ width: 150, marginTop: '2%' }}>
                     Upload File
-                    <input type="file" name="foodImage"  hidden onChange={handleImageChange} />
+                    <input type="file" name="foodImage" hidden onChange={handleImageChange} />
                 </Button>
-                {errors.foodImage && <span style={{ color: 'red' }}>{errors.foodImage}</span>}  
-                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop:"2%" }}>
+                {errors.foodImage && <span style={{ color: 'red' }}>{errors.foodImage}</span>}
+                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop: '2%' }}>
                     Thêm Đồ ăn
                 </Button>
             </form>

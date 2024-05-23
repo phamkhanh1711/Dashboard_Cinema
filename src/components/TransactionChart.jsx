@@ -6,13 +6,22 @@ export default function TransactionChart() {
   const [transactionData, setTransactionData] = useState([]);
 
 
-  const menu = JSON.parse(localStorage.getItem('bookingData')) || []
+  useEffect(() => {
+    // Retrieve booking data from local storage
+    const bookingData = JSON.parse(localStorage.getItem('bookingData')) || [];
+    
+    // Aggregate all booking IDs
+    const bookingIds = bookingData.map(item => item.bookingId);
 
-  const renderMenu = Object.keys(menu).map((key) => {
-   let id = menu[key].bookingId
-  //  console.log(id);
-   localStorage.setItem('bookingId', JSON.stringify(id))
-  })
+    // Store all booking IDs in local storage as an array
+    localStorage.setItem('bookingIds', JSON.stringify(bookingIds));
+
+    // Format the data for the chart
+    const formattedData = generateMockData(bookingData);
+
+    // Set the formatted data to state
+    setTransactionData(formattedData);
+  }, []);
 
   
   useEffect(() => {
@@ -23,7 +32,8 @@ export default function TransactionChart() {
 
   // Function to generate mock data
   const generateMockData = () => {
-    const data = JSON.parse(localStorage.getItem('bookingId')) || []
+    const data = JSON.parse(localStorage.getItem('bookingIds')) || []
+    console.log(data);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     return months.map((month) => ({

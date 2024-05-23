@@ -123,7 +123,12 @@ function AddMovieShowtime() {
                 }
                 const response = await axios.post('http://localhost:4000/show/createShow', formData)
                 console.log(response)
-                alert('Thêm lịch chiếu thành công')
+                Swal.fire({
+                    icon: 'success',
+                    title: response.data.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                })
                 navigate('/showtime')
             } catch (error) {
                 console.error(error)

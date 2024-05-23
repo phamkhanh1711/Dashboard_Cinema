@@ -12,6 +12,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import { format } from 'date-fns';
 import SearchIcon from '@mui/icons-material/Search';
 import { HiOutlineSearch } from 'react-icons/hi';
+import Cookies from 'js-cookie';
 
 function Booking() {
     const [bookingData, setBookingData] = useState([]);
@@ -22,16 +23,30 @@ function Booking() {
     const [searchResults, setSearchResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
     const [isSearchActive, setIsSearchActive] = useState(false);
+    const [selectedBookingId, setSelectedBooking] = useState(null);
     const navigate = useNavigate();
     const searchRef = useRef(null);
+
+    const Token = Cookies.get('Token');
+    const config = {
+        headers: {
+            Authorization: `Bearer ${Token}`
+        }
+    };
+
+    const url = 'http://localhost:4000/booking/admin/allBooking';
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:4000/booking/admin/allBooking');
+                const response = await axios.get(url, config);
                 console.log('Booking data:', response);
-                setBookingData(response.data.data.getAllBooking);
-                localStorage.setItem('bookingData', JSON.stringify(response.data.data.getAllBooking));  // Save data to local storage
+                const sortedData = response.data.data.getAllBooking.sort(
+                    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                );
+                console.log('Sorted booking data:', sortedData);
+                setBookingData(sortedData);
+                localStorage.setItem('bookingData', JSON.stringify(sortedData));  // Save data to local storage
             } catch (error) {
                 console.error('Error fetching booking data:', error);
             }
@@ -73,20 +88,22 @@ function Booking() {
         } catch (error) {
             console.error("Error fetching data:", error);
         }
-    }
+    };
 
     const handleResultClick = (bookingId) => {
         console.log(`Clicked on result with ID ${bookingId}`);
         navigate(`/booking_detail/${bookingId}`);
         setShowResults(false);
-    }
+    };
 
-    const handleMenuOpen = (event) => {
+    const handleMenuOpen = (event, bookingId) => {
         setAnchorEl(event.currentTarget);
+        setSelectedBooking(bookingId);
     };
 
     const handleMenuClose = () => {
         setAnchorEl(null);
+        setSelectedBooking(null);
     };
 
     const handleChangePage = (event, newPage) => {
@@ -98,9 +115,9 @@ function Booking() {
         setCurrentPage(1);
     };
 
-    const handleEdit = (bookingId) => {
-        console.log(bookingId);
-        navigate(`/booking_detail/${bookingId}`);
+    const handleEdit = () => {
+        console.log(selectedBookingId);
+        navigate(`/booking_detail/${selectedBookingId}`);
         handleMenuClose();
     };
 
@@ -115,7 +132,7 @@ function Booking() {
     return (
         <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 flex-1">
             <strong className="text-gray-700 font-medium">Lịch Sử Đặt Vé</strong>
-            <div className="relativee" style={{ float: "right",position:"relative" }} ref={searchRef}>
+            <div className="relative" style={{ float: "right", position: "relative" }} ref={searchRef}>
                 <HiOutlineSearch fontSize={20} className="text-gray-400 absolute top-1/2 left-3 -translate-y-1/2" />
                 <input
                     type="text"
@@ -161,48 +178,52 @@ function Booking() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {currentRows.map((booking, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{index + 1}</TableCell>
-                                    <TableCell>{booking.bookingId}</TableCell>
-                                    <TableCell>{booking.User ? booking.User.fullName : 'Unknown'}</TableCell>
-                                    <TableCell>{booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.movie.movieName : 'Unknown'}</TableCell>
-                                    <TableCell>{booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.CreateOn : 'Unknown'}</TableCell>
-                                    <TableCell>
-                                        {booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.startTime : 'Unknown'} ~
-                                        {booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.endTime : 'Unknown'}
-                                    </TableCell>
-                                    <TableCell>
-                                        {format(new Date(booking.createdAt), 'dd/MM/yyyy HH:mm:ss')}
-                                    </TableCell>
-                                    <TableCell>
-                                        <IconButton
-                                            aria-label="more"
-                                            aria-controls="product-menu"
-                                            aria-haspopup="true"
-                                            onClick={handleMenuOpen}
-                                        >
-                                            <MoreVertIcon />
-                                        </IconButton>
-                                        <Menu
-                                            id="product-menu"
-                                            anchorEl={anchorEl}
-                                            keepMounted
-                                            open={Boolean(anchorEl)}
-                                            onClose={handleMenuClose}
-                                        >
-                                            <MenuItem onClick={() => handleDelete(booking.userId)}>
-                                                <DeleteIcon />
-                                                Huỷ vé
-                                            </MenuItem>
-                                            <MenuItem onClick={() => handleEdit(booking.bookingId)}>
-                                                <UpdateIcon />
-                                                Chi tiết
-                                            </MenuItem>
-                                        </Menu>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {currentRows.map((booking, index) => {
+                                const globalIndex = indexOfFirstRow + index + 1;
+                                console.log(globalIndex); // Calculate the global index
+                                return (
+                                    <TableRow key={globalIndex}>
+                                        <TableCell>{globalIndex}</TableCell>
+                                        <TableCell>{booking.bookingId}</TableCell>
+                                        <TableCell>{booking.User ? booking.User.fullName : 'Unknown'}</TableCell>
+                                        <TableCell>{booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.movie.movieName : 'Unknown'}</TableCell>
+                                        <TableCell>{booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.CreateOn : 'Unknown'}</TableCell>
+                                        <TableCell>
+                                            {booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.startTime : 'Unknown'} ~
+                                            {booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.endTime : 'Unknown'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {format(new Date(booking.createdAt), 'dd/MM/yyyy HH:mm:ss')}
+                                        </TableCell>
+                                        <TableCell>
+                                            <IconButton
+                                                aria-label="more"
+                                                aria-controls="product-menu"
+                                                aria-haspopup="true"
+                                                onClick={(event) => handleMenuOpen(event, booking.bookingId)}
+                                            >
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                            <Menu
+                                                id="product-menu"
+                                                anchorEl={anchorEl}
+                                                keepMounted
+                                                open={Boolean(anchorEl)}
+                                                onClose={handleMenuClose}
+                                            >
+                                                <MenuItem onClick={() => handleDelete(booking.userId)}>
+                                                    <DeleteIcon />
+                                                    Huỷ vé
+                                                </MenuItem>
+                                                <MenuItem onClick={handleEdit}>
+                                                    <UpdateIcon />
+                                                    Chi tiết
+                                                </MenuItem>
+                                            </Menu>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -211,8 +232,6 @@ function Booking() {
                         count={Math.ceil((isSearchActive ? searchResults : bookingData).length / rowsPerPage)}
                         page={currentPage}
                         onChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onChangeRowsPerPage={handleChangeRowsPerPage}
                     />
                 </div>
             </div>

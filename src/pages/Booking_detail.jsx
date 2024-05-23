@@ -7,16 +7,19 @@ import { saveAs } from 'file-saver'
 
 function Booking_detail() {
     const [bookingData, setBookingData] = useState(null)
-
+    const [detailBookingTicket, setDetailBookingTicket] = useState(null)
     const params = useParams()
-    console.log('Params:', params.bookingId)
-    
+
     useEffect(() => {
         axios
             .get(`http://localhost:4000/booking/detailBooking/${params.bookingId}`)
             .then((response) => {
                 console.log('Booking data:', response.data)
                 setBookingData(response.data.data)
+
+                const ticket = response.data.data.detailBookingTicket
+                console.log('Ticket:', ticket)
+                setDetailBookingTicket(ticket)
             })
             .catch((error) => {
                 console.error('Error fetching booking data:', error)
@@ -26,9 +29,10 @@ function Booking_detail() {
     const exportToExcel = () => {
         if (!bookingData) return
 
-        const ticket = bookingData.detailBookingTicket[0]
-        const show = ticket.Show
+        const ticket = bookingData.detailBookingTicket
+        const show = ticket[0].Show
         const movie = show.movie
+        const food = bookingData.detailBookingFood
         const cinemaHall = show.CinemaHall
         const user = bookingData.detailBooking.User
 
@@ -38,13 +42,14 @@ function Booking_detail() {
             ['Rạp', cinemaHall.cinemaHallName],
             ['Ngày Chiếu', show.CreateOn],
             ['Giờ Chiếu', `${show.startTime} ~ ${show.endTime}`],
-            ['Ghế', ticket.CinemaHallSeat.Seat.numberSeat],
+            ['Ghế', ticket.map((item) => item.CinemaHallSeat.Seat.numberSeat).join(', ')],
+            ['Đồ Ăn', food.map((item) => item.Food.foodName).join(', ')],
             ['Giá', `${bookingData.detailBooking.totalPrice} VND`],
             [''],
             ['THÔNG TIN KHÁCH HÀNG'],
             ['Họ Tên', user.fullName],
             ['Email', user.email],
-            ['Số Điện Thoại', user.phoneNumber],
+            ['Số Điện Thoại', user.phoneNumber]
         ]
 
         const worksheet = XLSX.utils.aoa_to_sheet(data)
@@ -114,11 +119,25 @@ function Booking_detail() {
                                 </Typography>
                                 <hr style={{ borderTop: '1px solid grey' }}></hr>
                                 <Typography variant="h6" mt={3}>
-                                    Ghế:{' '}
-                                    <Box ml={40} mt={-3.5}>
-                                        {bookingData.detailBookingTicket[0].CinemaHallSeat.Seat.numberSeat}
-                                    </Box>{' '}
+                                        Ghế:{' '}
+                                        {bookingData.detailBookingTicket.map((ticket, index) => (
+                                            <Box key={index} component="span"  style={{marginLeft:"7%"}} >
+                                                {ticket.CinemaHallSeat.Seat.numberSeat}
+                                                {index < bookingData.detailBookingTicket.length - 1 && ', '}
+                                            </Box>
+                                        ))}
+                                    </Typography>
+                                <hr style={{ borderTop: '1px solid grey' }}></hr>
+                                <Typography variant="h6" mt={3}>
+                                    Đồ Ăn:{' '}
+                                    {bookingData.detailBookingFood.map((food, index) => (
+                                        <Box key={index} component="span" ml={index === 0 ? 1 : 0}>
+                                            {food.Food.foodName}
+                                            {index < bookingData.detailBookingFood.length - 1 && ', '}
+                                        </Box>
+                                    ))}
                                 </Typography>
+
                                 <hr style={{ borderTop: '1px solid grey' }}></hr>
                                 <Typography variant="h6" mt={3}>
                                     Giá:{' '}

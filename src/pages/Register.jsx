@@ -60,6 +60,14 @@ function Register() {
             }); 
             navigate('/');
           }
+         else if(res.data.data.role === 2){
+            Swal.fire({
+              title: "Success!",
+              text: res.data.message,
+              icon: "success",
+            }); 
+            navigate('/booking');
+          }
           else{
             alert("Bạn không có quyền truy cập vào trang này");
           }
@@ -68,12 +76,12 @@ function Register() {
           const Token = res.data.data.accessToken;
           console.log(Token);
           Cookies.set('Token', Token);
-          // const Auth = res.data.User;
-          // console.log(Auth);
-          // Cookies.set('Auth', JSON.stringify(Auth));
+          const Auth = res.data.data.auth;
+          console.log(Auth);
+          Cookies.set('Auth', JSON.stringify(Auth));
           
 
-          // Cookies.setItem('Auth', JSON.stringify(Auth));
+        
           
          
           // Sau khi đăng nhập thành công, điều hướng đến trang tương ứng

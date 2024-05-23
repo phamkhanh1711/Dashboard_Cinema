@@ -52,9 +52,9 @@ function AddProduct() {
     const handleDateChange = (date) => {
         setMovie((prevState) => ({
             ...prevState,
-            movieRelease: date ? (date) : null  // Ensure dayjs object or null
-        }));
-    };
+            movieRelease: date ? date : null // Ensure dayjs object or null
+        }))
+    }
 
     const toBase64 = (file) => {
         return new Promise((resolve, reject) => {
@@ -121,29 +121,29 @@ function AddProduct() {
             errorsSubmit.movieCountry = 'Vui lòng nhập quốc gia phim'
             flag = false
         }
-        if (Movie.movieImage === 0 ) {
-            errorsSubmit.movieImage = 'Vui lòng chọn ảnh';
-            flag = false;
+        if (Movie.movieImage === 0) {
+            errorsSubmit.movieImage = 'Vui lòng chọn ảnh'
+            flag = false
         } else {
-            let size = Movie.movieImage.size;
-            let name = Movie.movieImage.name;
+            let size = Movie.movieImage.size
+            let name = Movie.movieImage.name
             if (!name) {
-                errorsSubmit.movieImage = 'Vui lòng chọn ảnh có định dạng hợp lệ';
-                flag = false;
+                errorsSubmit.movieImage = 'Vui lòng chọn ảnh có định dạng hợp lệ'
+                flag = false
             } else {
-                let ext = name.split('.').pop();
-                let arrayExt = ['png', 'jpg', 'jpeg'];
+                let ext = name.split('.').pop()
+                let arrayExt = ['png', 'jpg', 'jpeg']
                 if (!arrayExt.includes(ext)) {
-                    errorsSubmit.movieImage = "Chỉ được upload file 'png', 'jpg', 'jpeg'";
-                    setMovie({ ...Movie, movieImage: '' });
-                    flag = false;
+                    errorsSubmit.movieImage = "Chỉ được upload file 'png', 'jpg', 'jpeg'"
+                    setMovie({ ...Movie, movieImage: '' })
+                    flag = false
                 } else if (size > 1024 * 1024) {
-                    errorsSubmit.movieImage = 'File quá lớn (tối đa 1MB)';
-                    flag = false;
+                    errorsSubmit.movieImage = 'File quá lớn (tối đa 1MB)'
+                    flag = false
                 }
             }
         }
-        
+
         let urlImage
         if (Movie.movieImage !== '') {
             urlImage = await handleUploadFile(Movie.movieImage)
@@ -159,9 +159,8 @@ function AddProduct() {
             })
         } else {
             setErrors({})
-           
+
             try {
-                
                 const formData = {
                     movieName: Movie.movieName,
                     movieCategory: Movie.movieCategory,
@@ -189,7 +188,7 @@ function AddProduct() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Thêm phim thất bại'
+                    text: error.response.data.message
                 })
             }
         }
@@ -226,12 +225,7 @@ function AddProduct() {
                     {errors.movieCategory && <p style={{ color: 'red' }}>{errors.movieCategory}</p>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField
-                        label="Đạo Diễn"
-                        name="movieDirector"
-                        sx={{ width: 300 }}
-                        onChange={handleChange}
-                    />
+                    <TextField label="Đạo Diễn" name="movieDirector" sx={{ width: 300 }} onChange={handleChange} />
                     {errors.movieDirector && <p style={{ color: 'red' }}>{errors.movieDirector}</p>}
                     <TextField
                         label="Diễn Viên"
@@ -246,16 +240,11 @@ function AddProduct() {
                         sx={{ width: 300, marginLeft: '16px' }}
                         onChange={handleChange}
                     />
-                    {errors.movieDuration && <p style={{ color: 'red' }}>{errors.movieDuration}</p> }
+                    {errors.movieDuration && <p style={{ color: 'red' }}>{errors.movieDuration}</p>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
-                    <TextField
-                        label="Mô Tả Phim"
-                        name="movieDescription"
-                        sx={{ width: 400 }}
-                        onChange={handleChange}
-                    />
-                    {errors.movieDescription && <p style={{ color: 'red' }}>{errors.movieDescription}</p>}  
+                    <TextField label="Mô Tả Phim" name="movieDescription" sx={{ width: 400 }} onChange={handleChange} />
+                    {errors.movieDescription && <p style={{ color: 'red' }}>{errors.movieDescription}</p>}
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={['DatePicker']}>
                             <DatePicker
@@ -265,7 +254,9 @@ function AddProduct() {
                                 renderInput={(params) => <TextField {...params} sx={{ width: 400 }} />}
                             />
                             {errors.movieRelease && (
-                                <p style={{ color: 'red', marginTop: '15%', marginLeft: '-50%' }}>{errors.movieRelease}</p>
+                                <p style={{ color: 'red', marginTop: '15%', marginLeft: '-50%' }}>
+                                    {errors.movieRelease}
+                                </p>
                             )}
                         </DemoContainer>
                     </LocalizationProvider>
