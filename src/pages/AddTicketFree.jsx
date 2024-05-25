@@ -12,6 +12,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers-pro/LocalizationProvid
 import { AdapterDayjs } from '@mui/x-date-pickers-pro/AdapterDayjs'
 import { DateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker'
 import Swal from 'sweetalert2'
+import { CircularProgress } from "@mui/material";
 function AddTicketFree() {
     const navigate = useNavigate()
     const [ticket, setTicket] = useState({
@@ -23,8 +24,17 @@ function AddTicketFree() {
         endDate: '',
         imagePromo: ''
     })
-
-    const [errors, setErrors] = useState([])
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        // Set a timeout to change the loading state after 2 seconds
+        const timer = setTimeout(() => {
+          setLoading(false);
+        }, 1000); // 2 seconds delay
+    
+        // Clear the timeout if the component is unmounted
+        return () => clearTimeout(timer);
+      }, []);
+    const [errors, setErrors] = useState({})
     const handleChange = (e) => {
         const nameInput = e.target.name
         const value = e.target.value
@@ -37,6 +47,7 @@ function AddTicketFree() {
         if (event.target.files.length > 0) {
             const file = event.target.files[0]
             setFileName(file.name)
+            setTicket((state) => ({ ...state, imagePromo: file }))
         }
     }
 
@@ -73,7 +84,7 @@ function AddTicketFree() {
             errorsSubmit.date = 'Ngày bắt đầu và ngày kết thúc không được để trống'
             flag = false
         }
-        if (ticket.imagePromo.length === 0) {
+        if (ticket.imagePromo === '') {
             errorsSubmit.imagePromo = 'Hình ảnh không được để trống'
             flag = false
         } else {
@@ -92,13 +103,6 @@ function AddTicketFree() {
             }
         }
 
-        let urlImage
-
-        if (ticket.imagePromo !== '') {
-            urlImage = await handleUploadFile(ticket.imagePromo)
-            setTicket({ ...ticket, imagePromo: urlImage })
-        }
-
         if (ticket.startDate >= ticket.endDate) {
             errorsSubmit.date = 'Ngày bắt đầu phải nhỏ hơn ngày kết thúc'
             flag = false
@@ -108,53 +112,53 @@ function AddTicketFree() {
             setErrors(errorsSubmit)
             alert('Vui lòng nhập đầy đủ thông tin')
             return
-        } else {
-            setErrors({})
-            try {
-                const formData = {
-                    code: ticket.code,
-                    promotionName: ticket.promotionName,
-                    description: ticket.description,
-                    discount: ticket.discount,
-                    startDate: ticket.startDate,
-                    endDate: ticket.endDate,
-                    imagePromo: urlImage
-                }
+        }
 
-                const response = await axios.post('http://localhost:4000/promotion/ticketfree', formData)
-                console.log(response)
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Tạo vé khuyến mãi thành công',
-                    showConfirmButton: false,
-                    timer: 1500
-                })
-                navigate('/ticket')
+        let urlImage
+        if (ticket.imagePromo) {
+            try {
+                urlImage = await handleUploadFile(ticket.imagePromo)
             } catch (error) {
-                console.error(error)
-                alert('tạo vé khuyến mãi thất bại')
+                console.error('Image upload failed:', error)
+                alert('Upload hình ảnh thất bại')
+                return
             }
         }
-    }
 
-    const [selected, setSelected] = useState([])
-    const handleCheckboxChange = (event, id) => {
-        if (event.target.checked) {
-            setSelected([...selected, id])
-        } else {
-            setSelected(selected.filter((selectedId) => selectedId !== id))
+        setErrors({})
+        try {
+            const formData = {
+                code: ticket.code,
+                promotionName: ticket.promotionName,
+                description: ticket.description,
+                discount: ticket.discount,
+                startDate: ticket.startDate,
+                endDate: ticket.endDate,
+                imagePromo: urlImage
+            }
+
+            const response = await axios.post('http://localhost:4000/promotion/ticketfree', formData)
+            console.log(response)
+            Swal.fire({
+                icon: 'success',
+                title: 'Tạo vé khuyến mãi thành công',
+                showConfirmButton: false,
+                timer: 1500
+            })
+            navigate('/ticket')
+        } catch (error) {
+            console.error(error)
+            alert('tạo vé khuyến mãi thất bại')
         }
-
-        // Sử dụng hàm callback để in ra state selected sau khi nó được cập nhật
-        setSelected((prevSelected) => {
-            console.log(prevSelected)
-            return prevSelected
-        })
     }
 
     return (
+       <>
+        {loading ? (
+                <CircularProgress className="loading" />
+            ) : (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Tạo Vé Khuyến Mãi</h1>
+            <h1 className='title'>Tạo Vé Khuyến Mãi</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField label="Mã" name="code" sx={{ width: 400 }} onChange={handleChange} />
@@ -189,7 +193,6 @@ function AddTicketFree() {
                         </DemoContainer>
                     </LocalizationProvider>
                 </div>
-
                 <Button variant="contained" type="file" component="label" sx={{ width: 150, marginTop: '2%' }}>
                     Upload File
                     <input type="file" name="imagePromo" hidden onChange={handleImageChange} />
@@ -206,6 +209,8 @@ function AddTicketFree() {
                 </Button>
             </form>
         </Box>
+         )}
+       </>
     )
 }
 

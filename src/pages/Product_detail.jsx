@@ -6,7 +6,7 @@ import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
 import { format } from 'date-fns'
 import { PieChart } from '@mui/x-charts/PieChart'
-
+import Swal from 'sweetalert2'
 
 function Product_detail() {
     const navigate = useNavigate()
@@ -79,6 +79,11 @@ function Product_detail() {
         })
     }
 
+    const handleComment = (movieId) => {
+        console.log('danh sachs comment', movieId)
+        navigate(`/listcomment/${movieId}`)
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault()
         const formattedDate = format(new Date(formData.movieRelease), 'yyyy-MM-dd')
@@ -98,7 +103,13 @@ function Product_detail() {
             .put(`http://localhost:4000/movie/update-movie/${params.movieId}`, data)
             .then((res) => {
                 console.log(res)
-                alert('Edit product successfully')
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Cập nhật phim thành công',
+                    showConfirmButton: false,
+                    timer: 1500
+                })
+
                 navigate('/products')
             })
             .catch((err) => {
@@ -109,18 +120,18 @@ function Product_detail() {
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1> Cập Nhật Phim</h1>
+            <h1 className="title"> Cập Nhật Phim</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
-                        label="Movie Name"
+                        label="Tên Phim"
                         name="movieName"
                         sx={{ width: 700 }}
                         value={formData.movieName}
                         onChange={handleChange}
                     />
                     <TextField
-                        label="Movie Category"
+                        label="Thể Loại Phim"
                         name="movieCategory"
                         onChange={handleChange}
                         value={formData.movieCategory}
@@ -129,21 +140,21 @@ function Product_detail() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
-                        label="Movie Director"
+                        label="Đạo Diễn Phim"
                         name="movieDirector"
                         sx={{ width: 300 }}
                         value={formData.movieDirector}
                         onChange={handleChange}
                     />
                     <TextField
-                        label="Movie Actor"
+                        label="Diễn Viên Phim"
                         name="movieActor"
                         sx={{ width: 300, marginLeft: '16px' }}
                         value={formData.movieActor}
                         onChange={handleChange}
                     />
                     <TextField
-                        label="Movie Duration"
+                        label="Thời Lượng Phim"
                         name="movieDuration"
                         sx={{ width: 300, marginLeft: '16px' }}
                         value={formData.movieDuration}
@@ -152,14 +163,14 @@ function Product_detail() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
-                        label="Movie Description"
+                        label="Mô Tả Phim"
                         name="movieDescription"
                         sx={{ width: 400 }}
                         value={formData.movieDescription}
                         onChange={handleChange}
                     />
                     <TextField
-                        label="Movie Release"
+                        label="Ngày Phát Hành Phim"
                         name="movieRelease"
                         sx={{ width: 300, marginLeft: '16px' }}
                         value={formData.movieRelease}
@@ -167,7 +178,7 @@ function Product_detail() {
                     />
                 </div>
                 <TextField
-                    label="Movie Language"
+                    label="Ngôn Ngữ Phim"
                     name="language"
                     value={formData.language}
                     onChange={handleChange}
@@ -175,34 +186,26 @@ function Product_detail() {
                     sx={{ width: 300 }}
                 />
                 <TextField
-                    label="Movie Country"
+                    label="Quốc Gia Phim"
                     name="movieCountry"
                     value={formData.movieCountry}
                     onChange={handleChange}
                     margin="normal"
                     sx={{ width: 300 }}
                 />
-                {sentiment && (
-                    <div style={{ display: 'flex', flexDirection: 'row', marginTop: '2%', marginLeft: '25%' }}>
-                        <PieChart
-                            style={{ color: 'red' }}
-                            series={[
-                                {
-                                    data: [
-                                        { id: 'Positive', value: tieucuc, label: '%Tích Cực' },
-                                        { id: 'Negative', value: tichcuc, label: '%Tiêu Cực', color: '#ff9800' }
-                                    ]
-                                }
-                            ]}
-                            width={400}
-                            height={200}
-                        />
-                    </div>
-                )}
-                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop: '-20%' }}>
+
+                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop: '2%' }}>
                     Cập Nhật Phim
                 </Button>
             </form>
+            <Button
+                onClick={() => handleComment(params.movieId)}
+                variant="contained"
+                type="submit"
+                sx={{ width: 300, marginTop: '2%' }}
+            >
+                Xem Danh Sách Comment
+            </Button>
         </Box>
     )
 }

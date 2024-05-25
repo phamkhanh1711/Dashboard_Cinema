@@ -132,7 +132,11 @@ function AddMovieShowtime() {
                 navigate('/showtime')
             } catch (error) {
                 console.error(error)
-                alert('Thêm lịch chiếu thất bại')
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: error.response.data.message
+                })  
             }
         }
     }

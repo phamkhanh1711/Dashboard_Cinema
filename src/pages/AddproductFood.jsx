@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import Autocomplete from '@mui/material/Autocomplete'
+import { Typography } from '@mui/material'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { format } from 'date-fns'
+
 import Cookies from 'js-cookie'
 import { handleUploadFile } from '../config/uploadImage'
 import Swal from 'sweetalert2'
@@ -22,10 +22,10 @@ function AddproductFood() {
         const value = e.target.value
         setFood((state) => ({ ...state, [nameInput]: value }))
     }
-
+    const [fileName, setFileName] = useState('')
     const handleImageChange = (event) => {
         const imageFile = event.target.files[0]
-
+        setFileName(imageFile.name)
         setFood({ ...Food, foodImage: imageFile })
     }
     const handleSubmit = async (event) => {
@@ -119,7 +119,7 @@ function AddproductFood() {
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Tạo Đồ Ăn</h1>
+            <h1 className="title">Tạo Đồ Ăn</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField label="Tên Đồ Ăn" name="foodName" sx={{ width: 700 }} onChange={handleChange} />
@@ -133,11 +133,18 @@ function AddproductFood() {
                     {errors.foodPrice && <span style={{ color: 'red' }}>{errors.foodPrice}</span>}
                 </div>
 
-                {/* <input type="file" name="foodImage" onChange={handleImageChange} style={{ marginBottom: '16px' }} /> */}
-                <Button variant="contained" component="label" sx={{ width: 150, marginTop: '2%' }}>
+
+                <Button variant="contained" type="file" component="label" sx={{ width: 150, marginTop: '2%' }}>
                     Upload File
                     <input type="file" name="foodImage" hidden onChange={handleImageChange} />
                 </Button>
+                {fileName && (
+                    <Typography variant="body1" sx={{ marginLeft: 2, marginTop: '2%' }}>
+                        {fileName}
+                    </Typography>
+                )} 
+
+
                 {errors.foodImage && <span style={{ color: 'red' }}>{errors.foodImage}</span>}
                 <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop: '2%' }}>
                     Thêm Đồ ăn

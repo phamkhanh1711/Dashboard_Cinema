@@ -15,22 +15,21 @@ function Food_detail() {
     const [formData, setFormData] = useState({
         foodId: '',
         foodName: '',
-        foodPrice: '',
+        foodPrice: ''
     })
 
     const config = {
         headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
-    };
+    }
     useEffect(() => {
         axios
-            .get(`http://localhost:4000/food/print-detailFood/${params.foodId}` , config)
+            .get(`http://localhost:4000/food/print-detailFood/${params.foodId}`, config)
             .then((res) => {
-                console.log(res);
+                console.log(res)
                 const data = res.data
                 setFormData({
                     foodName: data.foodName,
-                    foodPrice: data.foodPrice,
-                  
+                    foodPrice: data.foodPrice
                 })
             })
             .catch((err) => {
@@ -45,20 +44,18 @@ function Food_detail() {
     }
     const handleSubmit = (e) => {
         e.preventDefault()
-      
-        
-    const config = {
-        headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
-    };
+
+        const config = {
+            headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
+        }
 
         const data = {
             foodId: params.foodId,
             foodName: formData.foodName,
-            foodPrice: formData.foodPrice,
-            
+            foodPrice: formData.foodPrice
         }
         axios
-            .put(`http://localhost:4000/food/update/${params.foodId}`, data , config)
+            .put(`http://localhost:4000/food/update/${params.foodId}`, data, config)
             .then((res) => {
                 console.log(res)
                 alert('Edit product successfully')
@@ -72,7 +69,7 @@ function Food_detail() {
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Cập Nhật Đồ Ăn</h1>
+            <h1 className='title'>Cập Nhật Đồ Ăn</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField
@@ -83,23 +80,14 @@ function Food_detail() {
                         onChange={handleChange}
                     />
                     <TextField
-                        label="Gia Tiền"
+                        label="Giá Tiền"
                         name="foodPrice"
                         onChange={handleChange}
                         value={formData.foodPrice}
                         sx={{ width: 700, marginLeft: '16px' }}
                     />
                 </div>
-              
-{/*                 
-                <TextField
-                    label="Movie Country"
-                    name="movieCountry"
-                    value={formData.movieCountry}
-                    onChange={handleChange}
-                    margin="normal"
-                    sx={{ width: 300 }}
-                /> */}
+
                 <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
                     Cập Nhật Đồ Ăn
                 </Button>

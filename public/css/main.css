@@ -176,3 +176,26 @@ body {
 .social-login__icon:hover {
 	transform: scale(1.5);	
 }
+.title{
+	font-size: 25px;
+	height: 10vh;
+	font-weight: bold;
+}
+.loading{
+  
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   
+    z-index: 9999; /* Ensure it is on top */
+  
+ 
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

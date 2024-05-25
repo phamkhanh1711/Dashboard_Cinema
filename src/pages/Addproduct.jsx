@@ -2,15 +2,9 @@ import React, { useEffect, useState } from 'react'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import Autocomplete from '@mui/material/Autocomplete'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { format } from 'date-fns'
 import { handleUploadFile } from '../config/uploadImage'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import FormControl from '@mui/material/FormControl'
-import Select from '@mui/material/Select'
 import FormGroup from '@mui/material/FormGroup'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
@@ -20,7 +14,7 @@ import Swal from 'sweetalert2'
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { MultiInputTimeRangeField } from '@mui/x-date-pickers-pro/MultiInputTimeRangeField'
+
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 function AddProduct() {
     const navigate = useNavigate()
@@ -43,9 +37,10 @@ function AddProduct() {
         const value = e.target.value
         setMovie((state) => ({ ...state, [nameInput]: value }))
     }
+    const [fileName, setFileName] = useState('')
     const handleImageChange = (event) => {
         const imageFile = event.target.files[0]
-
+        setFileName(imageFile.name)
         setMovie({ ...Movie, movieImage: imageFile })
     }
 
@@ -211,7 +206,7 @@ function AddProduct() {
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Add Phim</h1>
+            <h1 className="title">Thêm Phim</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <TextField label="Tên Phim" name="movieName" sx={{ width: 700 }} onChange={handleChange} />
@@ -302,10 +297,20 @@ function AddProduct() {
                     </Grid>
                 </FormGroup>
 
-                <input type="file" name="movieImage" onChange={handleImageChange} style={{ marginBottom: '16px' }} />
-                {errors.movieImage && <p style={{ color: 'red' }}>{errors.movieImage}</p>}
-                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300 }}>
-                    Add Product
+                <Button variant="contained" type="file" component="label" sx={{ width: 150, marginTop: '2%' }}>
+                    Upload File
+                    <input type="file" name="movieImage " hidden onChange={handleImageChange}   />
+                </Button>
+                {fileName && (
+                    <Typography variant="body1" sx={{ marginLeft: 2, marginTop: '2%' }}>
+                        {fileName}
+                    </Typography>
+                )}
+
+
+               {errors.movieImage && <p style={{ color: 'red' }}>{errors.movieImage}</p>}
+                <Button onClick={handleSubmit} variant="contained" type="submit" sx={{ width: 300, marginTop:"5%" }}>
+                    Thêm Phim
                 </Button>
             </form>
         </Box>

@@ -1,138 +1,137 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { Pagination } from '@mui/material';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import Menu from '@mui/material/Menu';
-import IconButton from '@mui/material/IconButton';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import MenuItem from '@mui/material/MenuItem';
-import DeleteIcon from '@mui/icons-material/Delete';
-import UpdateIcon from '@mui/icons-material/Update';
-import { format } from 'date-fns';
-import SearchIcon from '@mui/icons-material/Search';
-import { HiOutlineSearch } from 'react-icons/hi';
-import Cookies from 'js-cookie';
+import React, { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { Pagination } from '@mui/material'
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
+import Menu from '@mui/material/Menu'
+import IconButton from '@mui/material/IconButton'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import MenuItem from '@mui/material/MenuItem'
+import DeleteIcon from '@mui/icons-material/Delete'
+import UpdateIcon from '@mui/icons-material/Update'
+import { format } from 'date-fns'
+import SearchIcon from '@mui/icons-material/Search'
+import { HiOutlineSearch } from 'react-icons/hi'
+import Cookies from 'js-cookie'
 
 function Booking() {
-    const [bookingData, setBookingData] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    const [showResults, setShowResults] = useState(false);
-    const [isSearchActive, setIsSearchActive] = useState(false);
-    const [selectedBookingId, setSelectedBooking] = useState(null);
-    const navigate = useNavigate();
-    const searchRef = useRef(null);
+    const [bookingData, setBookingData] = useState([])
+    const [currentPage, setCurrentPage] = useState(1)
+    const [rowsPerPage, setRowsPerPage] = useState(5)
+    const [anchorEl, setAnchorEl] = useState(null)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [searchResults, setSearchResults] = useState([])
+    const [showResults, setShowResults] = useState(false)
+    const [isSearchActive, setIsSearchActive] = useState(false)
+    const [selectedBookingId, setSelectedBooking] = useState(null)
 
-    const Token = Cookies.get('Token');
+    const navigate = useNavigate()
+    const searchRef = useRef(null)
+
+    const Token = Cookies.get('Token')
     const config = {
         headers: {
             Authorization: `Bearer ${Token}`
         }
-    };
+    }
 
-    const url = 'http://localhost:4000/booking/admin/allBooking';
+    const url = 'http://localhost:4000/booking/admin/allBooking'
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get(url, config);
-                console.log('Booking data:', response);
+                const response = await axios.get(url, config)
+                console.log('Booking data:', response)
                 const sortedData = response.data.data.getAllBooking.sort(
                     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-                );
-                console.log('Sorted booking data:', sortedData);
-                setBookingData(sortedData);
-                localStorage.setItem('bookingData', JSON.stringify(sortedData));  // Save data to local storage
-            } catch (error) {
-                console.error('Error fetching booking data:', error);
-            }
-        };
+                )
 
-        fetchData();
-    }, []);
+                setBookingData(sortedData)
+                localStorage.setItem('bookingData', JSON.stringify(sortedData)) // Save data to local storage
+            } catch (error) {
+                console.error('Error fetching booking data:', error)
+            }
+        }
+
+        fetchData()
+    }, [])
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
-                setShowResults(false);
+                setShowResults(false)
             }
-        };
+        }
 
-        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside)
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
 
     const handleSearch = async () => {
         try {
             if (!searchTerm.trim()) {
-                console.error("Search term is required.");
-                return;
+                console.error('Search term is required.')
+                return
             }
 
             const response = await axios.get(`http://localhost:4000/booking/searchBooking`, {
                 params: {
-                    bookingId: searchTerm,
-                },
-            });
-            console.log(response);
-            setSearchResults(response.data.data.bookingResult);
-            setShowResults(true);
-            setIsSearchActive(true);
-
+                    bookingId: searchTerm
+                }
+            })
+            console.log(response)
+            setSearchResults(response.data.data.bookingResult)
+            setShowResults(true)
+            setIsSearchActive(true)
         } catch (error) {
-            console.error("Error fetching data:", error);
+            console.error('Error fetching data:', error)
         }
-    };
+    }
 
     const handleResultClick = (bookingId) => {
-        console.log(`Clicked on result with ID ${bookingId}`);
-        navigate(`/booking_detail/${bookingId}`);
-        setShowResults(false);
-    };
+        navigate(`/booking_detail/${bookingId}`)
+        setShowResults(false)
+    }
 
     const handleMenuOpen = (event, bookingId) => {
-        setAnchorEl(event.currentTarget);
-        setSelectedBooking(bookingId);
-    };
+        setAnchorEl(event.currentTarget)
+        setSelectedBooking(bookingId)
+    }
 
     const handleMenuClose = () => {
-        setAnchorEl(null);
-        setSelectedBooking(null);
-    };
+        setAnchorEl(null)
+        setSelectedBooking(null)
+    }
 
     const handleChangePage = (event, newPage) => {
-        setCurrentPage(newPage);
-    };
+        setCurrentPage(newPage)
+    }
 
     const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setCurrentPage(1);
-    };
+        setRowsPerPage(parseInt(event.target.value, 10))
+        setCurrentPage(1)
+    }
 
     const handleEdit = () => {
-        console.log(selectedBookingId);
-        navigate(`/booking_detail/${selectedBookingId}`);
-        handleMenuClose();
-    };
+        console.log(selectedBookingId)
+        navigate(`/booking_detail/${selectedBookingId}`)
+        handleMenuClose()
+    }
 
     const handleDelete = (userId) => {
-        console.log(userId);
-    };
+        console.log(userId)
+    }
 
-    const indexOfLastRow = currentPage * rowsPerPage;
-    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const currentRows = (isSearchActive ? searchResults : bookingData).slice(indexOfFirstRow, indexOfLastRow);
+    const indexOfLastRow = currentPage * rowsPerPage
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage
+    const currentRows = (isSearchActive ? searchResults : bookingData).slice(indexOfFirstRow, indexOfLastRow)
 
     return (
         <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 flex-1">
-            <strong className="text-gray-700 font-medium">Lịch Sử Đặt Vé</strong>
-            <div className="relative" style={{ float: "right", position: "relative" }} ref={searchRef}>
+            <strong className='title'>Lịch Sử Đặt Vé</strong>
+            <div className="relative" style={{ float: 'right', position: 'relative' }} ref={searchRef}>
                 <HiOutlineSearch fontSize={20} className="text-gray-400 absolute top-1/2 left-3 -translate-y-1/2" />
                 <input
                     type="text"
@@ -179,22 +178,36 @@ function Booking() {
                         </TableHead>
                         <TableBody>
                             {currentRows.map((booking, index) => {
-                                const globalIndex = indexOfFirstRow + index + 1;
-                                console.log(globalIndex); // Calculate the global index
+                                const globalIndex = indexOfFirstRow + index + 1
+
                                 return (
                                     <TableRow key={globalIndex}>
                                         <TableCell>{globalIndex}</TableCell>
                                         <TableCell>{booking.bookingId}</TableCell>
                                         <TableCell>{booking.User ? booking.User.fullName : 'Unknown'}</TableCell>
-                                        <TableCell>{booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.movie.movieName : 'Unknown'}</TableCell>
-                                        <TableCell>{booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.CreateOn : 'Unknown'}</TableCell>
                                         <TableCell>
-                                            {booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.startTime : 'Unknown'} ~
-                                            {booking.BookingTickets[0].Show ? booking.BookingTickets[0].Show.endTime : 'Unknown'}
+                                            {booking.BookingTickets[0].Show
+                                                ? booking.BookingTickets[0].Show.movie.movieName
+                                                : 'Unknown'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {booking.BookingTickets[0].Show
+                                                ? booking.BookingTickets[0].Show.CreateOn
+                                                : 'Unknown'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {booking.BookingTickets[0].Show
+                                                ? booking.BookingTickets[0].Show.startTime
+                                                : 'Unknown'}{' '}
+                                            ~
+                                            {booking.BookingTickets[0].Show
+                                                ? booking.BookingTickets[0].Show.endTime
+                                                : 'Unknown'}
                                         </TableCell>
                                         <TableCell>
                                             {format(new Date(booking.createdAt), 'dd/MM/yyyy HH:mm:ss')}
                                         </TableCell>
+
                                         <TableCell>
                                             <IconButton
                                                 aria-label="more"
@@ -222,7 +235,7 @@ function Booking() {
                                             </Menu>
                                         </TableCell>
                                     </TableRow>
-                                );
+                                )
                             })}
                         </TableBody>
                     </Table>
@@ -236,7 +249,7 @@ function Booking() {
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
-export default Booking;
+export default Booking

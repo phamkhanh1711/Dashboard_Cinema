@@ -9,10 +9,14 @@ export default function Dashboard() {
 	return (
 		<div className="flex flex-col gap-4">
 			<DashboardStatsGrid />
-			<div style={{width:"100%",height:"100%"}}>
-				<TransactionChart />
-				<BuyerProfilePieChart/>	
-			</div>
+			<div className="flex gap-5"  style={{marginLeft:"5%", marginTop:"5%"}}>
+    <div className="flex-1">
+        <TransactionChart />
+    </div>
+    <div className="flex-2">
+        <BuyerProfilePieChart />
+    </div>
+</div>
 				
 			
 		</div>

@@ -6,9 +6,8 @@ import Cookies from 'js-cookie'
 import AddIcon from '@mui/icons-material/Add' // Import AddIcon component from Material-UI
 
 import DeleteIcon from '@mui/icons-material/Delete'
-
+import { CircularProgress } from '@mui/material'
 import MenuItem from '@mui/material/MenuItem'
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
 
 import Menu from '@mui/material/Menu'
 import IconButton from '@mui/material/IconButton'
@@ -23,32 +22,39 @@ function Products() {
     const [rowsPerPage, setRowsPerPage] = useState(5)
     const [anchorEl, setAnchorEl] = useState(null)
     const [selectedMovieId, setSelectedMovieId] = useState(null)
-
+    const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
     const handleChangePage = (event, newPage) => {
         setCurrentPage(newPage)
     }
+    useEffect(() => {
+        // Set a timeout to change the loading state after 2 seconds
+        const timer = setTimeout(() => {
+            setLoading(false)
+        }, 1000) // 2 seconds delay
+
+        // Clear the timeout if the component is unmounted
+        return () => clearTimeout(timer)
+    }, [])
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10))
         setCurrentPage(1)
     }
 
-   const Token = Cookies.get('Token')
+    const Token = Cookies.get('Token')
 
     const config = {
-
         headers: {
             Authorization: `Bearer ${Token}`
         }
     }
 
-
     const url = 'http://localhost:4000/movie/all-movie'
 
     useEffect(() => {
         axios
-            .get(url,config)
+            .get(url, config)
             .then((res) => {
                 console.log(res)
                 setRecentOrderData(res.data)
@@ -104,82 +110,86 @@ function Products() {
 
     return (
         <>
-            <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 flex-1">
-                <strong className="text-gray-700 font-medium">Tất cả Phim</strong>
-                <div className="border-x border-gray-200 rounded-sm mt-3">
-                    <table className="w-full text-gray-700">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Tên Phim</th>
-                                <th>Thể Loại</th>
-                                <th>Hình Ảnh</th>
-                                <th>Đạo Diễn</th>
-                                <th>Thời Lượng</th>
-                                <th>Sản Xuất</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentRows.map((order) => (
-                                <tr key={order.movieId}>
-                                    <td>
-                                        <Link to={``}>{order.movieId}</Link>
-                                    </td>
-                                    <td>{order.movieName}</td>
-                                    <td>{order.movieCategory}</td>
-                                    <td>
-                                        <img
-                                            src={order.movieImage}
-                                            alt={order.movieName}
-                                            style={{ maxWidth: '50px', maxHeight: '50px' }}
-                                        />
-                                    </td>
-                                    <td>{order.movieDirector}</td>
-                                    <td>{order.movieDuration} Phút</td>
-                                    <td>{order.country}</td>
-                                    <td>
-                                        <IconButton
-                                            aria-label="more"
-                                            aria-controls="product-menu"
-                                            aria-haspopup="true"
-                                            onClick={(event) => handleMenuOpen(event, order.movieId)}
-                                        >
-                                            <MoreVertIcon />
-                                        </IconButton>
-                                        <Menu
-                                            id="product-menu"
-                                            anchorEl={anchorEl}
-                                            keepMounted
-                                            open={Boolean(anchorEl)}
-                                            onClose={handleMenuClose}
-                                        >
-                                            <MenuItem onClick={handleEdit}>
-                                                <UpdateIcon />
-                                                Update
-                                            </MenuItem>
-                                            <MenuItem onClick={handleDelete}>
-                                                <DeleteIcon />
-                                                Delete
-                                            </MenuItem>
-                                        </Menu>
-                                    </td>
+            {loading ? (
+                <CircularProgress className="loading" />
+            ) : (
+                <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 flex-1">
+                    <strong className="title">Tất cả Phim</strong>
+                    <div className="border-x border-gray-200 rounded-sm mt-3">
+                        <table className="w-full text-gray-700">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên Phim</th>
+                                    <th>Thể Loại</th>
+                                    <th>Hình Ảnh</th>
+                                    <th>Đạo Diễn</th>
+                                    <th>Thời Lượng</th>
+                                    <th>Sản Xuất</th>
+                                    <th>Thao Tác</th>
                                 </tr>
-                            ))}
+                            </thead>
+                            <tbody>
+                                {currentRows.map((order) => (
+                                    <tr key={order.movieId}>
+                                        <td>
+                                            <Link to={``}>{order.movieId}</Link>
+                                        </td>
+                                        <td>{order.movieName}</td>
+                                        <td>{order.movieCategory}</td>
+                                        <td>
+                                            <img
+                                                src={order.movieImage}
+                                                alt={order.movieName}
+                                                style={{ maxWidth: '50px', maxHeight: '50px' }}
+                                            />
+                                        </td>
+                                        <td>{order.movieDirector}</td>
+                                        <td>{order.movieDuration} Phút</td>
+                                        <td>{order.country}</td>
+                                        <td>
+                                            <IconButton
+                                                aria-label="more"
+                                                aria-controls="product-menu"
+                                                aria-haspopup="true"
+                                                onClick={(event) => handleMenuOpen(event, order.movieId)}
+                                            >
+                                                <MoreVertIcon />
+                                            </IconButton>
+                                            <Menu
+                                                id="product-menu"
+                                                anchorEl={anchorEl}
+                                                keepMounted
+                                                open={Boolean(anchorEl)}
+                                                onClose={handleMenuClose}
+                                            >
+                                                <MenuItem onClick={handleEdit}>
+                                                    <UpdateIcon />
+                                                    Cập Nhật Phim
+                                                </MenuItem>
+                                                <MenuItem onClick={handleDelete}>
+                                                    <DeleteIcon />
+                                                    Xóa Phim
+                                                </MenuItem>
+                                            </Menu>
+                                        </td>
+                                    </tr>
+                                ))}
                                 <MenuItem onClick={handleAdd}>
-                                <AddIcon /> Add
-                            </MenuItem>
-                        </tbody>
-                    </table>
+                                    <AddIcon /> Tạo Phim
+                                </MenuItem>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="pagination-container mt-3">
+                        <Pagination
+                            count={Math.ceil(recentOrderData.length / rowsPerPage)}
+                            page={currentPage}
+                            onChange={handleChangePage}
+                        />
+                    </div>
                 </div>
-                <div className="pagination-container mt-3">
-                    <Pagination
-                        count={Math.ceil(recentOrderData.length / rowsPerPage)}
-                        page={currentPage}
-                        onChange={handleChangePage}
-                    />
-                </div>
-            </div>
+            )}
         </>
     )
 }

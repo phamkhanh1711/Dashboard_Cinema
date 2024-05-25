@@ -4,12 +4,23 @@ import axios from 'axios'
 import { useParams } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
+import { CircularProgress } from '@mui/material'
 
 function Booking_detail() {
     const [bookingData, setBookingData] = useState(null)
     const [detailBookingTicket, setDetailBookingTicket] = useState(null)
+    const [foodBooking, setFoodBooking] = useState(null)
     const params = useParams()
+    const [loading, setLoading] = useState(true)
+    useEffect(() => {
+        // Set a timeout to change the loading state after 2 seconds
+        const timer = setTimeout(() => {
+            setLoading(false)
+        }, 1000) // 2 seconds delay
 
+        // Clear the timeout if the component is unmounted
+        return () => clearTimeout(timer)
+    }, [])
     useEffect(() => {
         axios
             .get(`http://localhost:4000/booking/detailBooking/${params.bookingId}`)
@@ -18,8 +29,11 @@ function Booking_detail() {
                 setBookingData(response.data.data)
 
                 const ticket = response.data.data.detailBookingTicket
-                console.log('Ticket:', ticket)
+
                 setDetailBookingTicket(ticket)
+
+                const food = response.data.data.detailBookingFood
+                setFoodBooking(food)
             })
             .catch((error) => {
                 console.error('Error fetching booking data:', error)
@@ -36,6 +50,17 @@ function Booking_detail() {
         const cinemaHall = show.CinemaHall
         const user = bookingData.detailBooking.User
 
+        // Calculate total ticket price
+        const totalTicketPrice = ticket.reduce((total, item) => total + item.ticketPrice, 0)
+
+        // Calculate total food price
+        const totalFoodPrice = food.reduce((total, item) => total + item.priceFood, 0)
+
+        // Assume you have other variables like discount, original price, and price after discount
+        const discount = bookingData.prommoPrice
+        const originalPrice = totalTicketPrice + totalFoodPrice
+
+        // Create data array for Excel
         const data = [
             ['THÔNG TIN ĐẶT VÉ'],
             ['Tên Phim', movie.movieName],
@@ -43,15 +68,22 @@ function Booking_detail() {
             ['Ngày Chiếu', show.CreateOn],
             ['Giờ Chiếu', `${show.startTime} ~ ${show.endTime}`],
             ['Ghế', ticket.map((item) => item.CinemaHallSeat.Seat.numberSeat).join(', ')],
-            ['Đồ Ăn', food.map((item) => item.Food.foodName).join(', ')],
-            ['Giá', `${bookingData.detailBooking.totalPrice} VND`],
+            [''],
+            ['Đồ Ăn', food.map((item) => `${item.quantity} x ${item.Food.foodName}`).join(', ')],
+
+            ['', ''],
+            ['Tổng Giá Ghế', `${totalTicketPrice} VND`],
+            ['Tổng Giá Đồ Ăn', `${totalFoodPrice} VND`],
+            ['Giá Ban Đầu', `${originalPrice} VND`],
+            ['Giảm giá', `- ${discount} VND`],
+            ['Giá Sau Giảm Giá', `${bookingData.detailBooking.totalPrice} VND`],
             [''],
             ['THÔNG TIN KHÁCH HÀNG'],
             ['Họ Tên', user.fullName],
             ['Email', user.email],
             ['Số Điện Thoại', user.phoneNumber]
         ]
-
+        console.log('data', data)
         const worksheet = XLSX.utils.aoa_to_sheet(data)
         const workbook = XLSX.utils.book_new()
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Booking Details')
@@ -62,10 +94,23 @@ function Booking_detail() {
     }
 
     const renderBookingDetail = () => {
+        // tính tổng tất cả các ghế
+
         if (!bookingData || !bookingData.detailBookingTicket || bookingData.detailBookingTicket.length === 0) {
             return <Typography variant="h6">Loading...</Typography>
         }
 
+        const ticketPrices = detailBookingTicket.map((ticket) => ticket.ticketPrice)
+
+        // Calculating the total ticket price by summing up all ticket prices
+        const totalTicketPrice = ticketPrices.reduce((total, price) => total + price, 0)
+
+        const foodPrices = foodBooking.map((food) => food.priceFood)
+
+        const totalFoodPrice = foodPrices.reduce((total, price) => total + price, 0)
+
+        const totalSum = totalTicketPrice + totalFoodPrice
+        console.log('totalSum', totalSum)
         return (
             <Grid container spacing={2} p={5}>
                 <Grid item xs={2} sm={6}>
@@ -80,7 +125,7 @@ function Booking_detail() {
                                 <img
                                     src={bookingData.detailBookingTicket[0].Show.movie.movieImage}
                                     alt="booking"
-                                    style={{ width: '40%', marginTop: '4%' }}
+                                    style={{ width: '80%', marginTop: '4%' }}
                                 />
                             </Box>
                         </Grid>
@@ -119,28 +164,54 @@ function Booking_detail() {
                                 </Typography>
                                 <hr style={{ borderTop: '1px solid grey' }}></hr>
                                 <Typography variant="h6" mt={3}>
-                                        Ghế:{' '}
-                                        {bookingData.detailBookingTicket.map((ticket, index) => (
-                                            <Box key={index} component="span"  style={{marginLeft:"7%"}} >
-                                                {ticket.CinemaHallSeat.Seat.numberSeat}
-                                                {index < bookingData.detailBookingTicket.length - 1 && ', '}
-                                            </Box>
-                                        ))}
-                                    </Typography>
-                                <hr style={{ borderTop: '1px solid grey' }}></hr>
-                                <Typography variant="h6" mt={3}>
-                                    Đồ Ăn:{' '}
-                                    {bookingData.detailBookingFood.map((food, index) => (
-                                        <Box key={index} component="span" ml={index === 0 ? 1 : 0}>
-                                            {food.Food.foodName}
-                                            {index < bookingData.detailBookingFood.length - 1 && ', '}
+                                    Ghế:{' '}
+                                    {bookingData.detailBookingTicket.map((ticket, index) => (
+                                        <Box key={index} component="span" style={{ marginLeft: '7%' }}>
+                                            {ticket.CinemaHallSeat.Seat.numberSeat}
+                                            {index < bookingData.detailBookingTicket.length - 1 && ', '}
                                         </Box>
                                     ))}
                                 </Typography>
-
                                 <hr style={{ borderTop: '1px solid grey' }}></hr>
                                 <Typography variant="h6" mt={3}>
-                                    Giá:{' '}
+                                    Đồ Ăn:
+                                    {bookingData.detailBookingFood.map((food, index) => (
+                                        <Box key={index} ml={index === 0 ? 10 : 10} mt={-6.8} p={3}>
+                                            {food.quantity} x {food.Food.foodName}
+                                        </Box>
+                                    ))}
+                                </Typography>
+                                <hr style={{ borderTop: '1px solid grey' }}></hr>
+                                <Typography variant="h6" mt={3}>
+                                    Tổng Giá Ghế:{' '}
+                                    <Box ml={40} mt={-3.5}>
+                                        {totalTicketPrice} VND
+                                    </Box>{' '}
+                                </Typography>
+                                <hr style={{ borderTop: '1px solid grey' }}></hr>
+                                <Typography variant="h6" mt={3}>
+                                    Tổng Giá Thức Ăn:{' '}
+                                    <Box ml={40} mt={-3.5}>
+                                        {totalFoodPrice} VND
+                                    </Box>{' '}
+                                </Typography>
+                                <hr style={{ borderTop: '1px solid grey' }}></hr>
+                                <Typography variant="h6" mt={3}>
+                                    Giá (Ban Đầu):{' '}
+                                    <Box ml={40} mt={-3.5}>
+                                        {totalSum} VND
+                                    </Box>{' '}
+                                </Typography>
+                                <hr style={{ borderTop: '1px solid grey' }}></hr>
+                                <Typography variant="h6" mt={3}>
+                                    Giảm Giá:{' '}
+                                    <Box ml={40} mt={-3.5}>
+                                        - {bookingData.prommoPrice} VND
+                                    </Box>{' '}
+                                </Typography>
+                                <hr style={{ borderTop: '1px solid grey' }}></hr>
+                                <Typography variant="h6" mt={3}>
+                                    Giá (Sau Khi Giảm):{' '}
                                     <Box ml={40} mt={-3.5}>
                                         {bookingData.detailBooking.totalPrice} VND
                                     </Box>{' '}
@@ -188,7 +259,16 @@ function Booking_detail() {
         )
     }
 
-    return <Box sx={{ flexGrow: 1 }}>{renderBookingDetail()}</Box>
+    return (
+        <>
+        {loading ? (
+                <CircularProgress className="loading" />
+            ) : (
+        <Box sx={{ flexGrow: 1 }}>{renderBookingDetail()}</Box>
+    )}
+        </>
+        
+    )
 }
 
 export default Booking_detail

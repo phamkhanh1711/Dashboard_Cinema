@@ -6,18 +6,27 @@ import AddIcon from '@mui/icons-material/Add' // Import AddIcon component from M
 import MenuItem from '@mui/material/MenuItem'
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material'
 import Cookies from 'js-cookie'
+import { CircularProgress } from '@mui/material'
 function TicketFree() {
     const [ticketData, setTicketData] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     const [rowsPerPage, setRowsPerPage] = useState(5)
     const [anchorEl, setAnchorEl] = useState(null)
     const navigate = useNavigate()
-    
+    const [loading, setLoading] = useState(true)
+    useEffect(() => {
+        // Set a timeout to change the loading state after 2 seconds
+        const timer = setTimeout(() => {
+            setLoading(false)
+        }, 1000) // 2 seconds delay
+
+        // Clear the timeout if the component is unmounted
+        return () => clearTimeout(timer)
+    }, [])
+
     const Token = Cookies.get('Token')
 
-   
     const config = {
-
         headers: {
             Authorization: `Bearer ${Token}`
         }
@@ -66,8 +75,11 @@ function TicketFree() {
 
     return (
         <>
+        {loading ? (
+                <CircularProgress className="loading" />
+            ) : (
             <div className="bg-white px-4 pt-3 pb-4 rounded-sm border border-gray-200 flex-1">
-                <strong className="text-gray-700 font-medium">Vé Khuyến Mãi</strong>
+                <strong className='title'>Vé Khuyến Mãi</strong>
                 <div className="border-x border-gray-200 rounded-sm mt-3">
                     <TableContainer>
                         <Table className="w-full text-gray-700" aria-label="ticket table">
@@ -103,7 +115,7 @@ function TicketFree() {
                                 <TableRow>
                                     <TableCell colSpan={7}>
                                         <MenuItem onClick={handleAddd}>
-                                            <AddIcon /> Add
+                                            <AddIcon /> Thêm vé khuyến mãi
                                         </MenuItem>
                                     </TableCell>
                                 </TableRow>
@@ -122,6 +134,7 @@ function TicketFree() {
                     </div>
                 </div>
             </div>
+             )}
         </>
     )
 }
