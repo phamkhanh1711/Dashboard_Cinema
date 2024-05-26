@@ -28,7 +28,7 @@ function Booking() {
     const navigate = useNavigate()
     const searchRef = useRef(null)
 
-    const Token = Cookies.get('Token')
+    const Token = Cookies.get('token')
     const config = {
         headers: {
             Authorization: `Bearer ${Token}`

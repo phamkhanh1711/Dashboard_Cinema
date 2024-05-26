@@ -24,7 +24,7 @@ function TicketFree() {
         return () => clearTimeout(timer)
     }, [])
 
-    const Token = Cookies.get('Token')
+    const Token = Cookies.get('token')
 
     const config = {
         headers: {

@@ -83,7 +83,7 @@ function AddproductFood() {
                 foodImage: urlImage
             }
 
-            const Token = Cookies.get('Token')
+            const Token = Cookies.get('token')
 
             // Khai báo các thông tin header
             const config = {

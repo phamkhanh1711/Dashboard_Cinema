@@ -73,12 +73,14 @@ function Register() {
           }
         
       
-          const Token = res.data.data.accessToken;
-          console.log(Token);
-          Cookies.set('Token', Token);
-          const Auth = res.data.data.auth;
-          console.log(Auth);
-          Cookies.set('Auth', JSON.stringify(Auth));
+          const token = res.data.data.accessToken;
+          console.log(token);
+          Cookies.set('token', token);
+
+          
+          const auth = res.data.data.auth;
+          console.log(auth);
+          Cookies.set('auth', JSON.stringify(auth));
           
 
         

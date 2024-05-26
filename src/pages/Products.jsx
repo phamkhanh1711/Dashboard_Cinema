@@ -42,7 +42,7 @@ function Products() {
         setCurrentPage(1)
     }
 
-    const Token = Cookies.get('Token')
+    const Token = Cookies.get('token')
 
     const config = {
         headers: {

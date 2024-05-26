@@ -199,7 +199,7 @@ export default function Customers() {
     const navigate = useNavigate()
 
     const config = {
-        headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
     }
 
     useEffect(() => {

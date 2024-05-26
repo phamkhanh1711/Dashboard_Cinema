@@ -22,7 +22,7 @@ function MovieShowtime() {
 
     const navigate = useNavigate()
 
-    const Token = Cookies.get('Token')
+    const Token = Cookies.get('token')
 
     const config = {
         headers: {

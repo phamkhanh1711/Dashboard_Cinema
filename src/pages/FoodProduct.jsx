@@ -74,7 +74,7 @@ function FoodProduct() {
 
     const handleDeletee = (foodId) => {
         const config = {
-            headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
+            headers: { Authorization: `Bearer ${Cookies.get('token')}` }
         }
         console.log(foodId)
         const deleteUrl = `http://localhost:4000/food/delete/${foodId}`

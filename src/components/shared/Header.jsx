@@ -13,6 +13,14 @@ export default function Header() {
 	const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
+    const token =  Cookies.get("token");
+    console.log(token);
+    useEffect(() => {
+        if (!token) {
+            navigate("/register");
+        }
+    }, []);
+
 
     const handleSearch = async () => {
         try {
@@ -43,7 +51,7 @@ export default function Header() {
 
 
     function renderLogin() {
-        const Token = Cookies.get("Token");
+        const Token = Cookies.get("token");
     
         if (Token) {
           return (
@@ -75,7 +83,7 @@ export default function Header() {
         }
       }
       function logout() {
-        Cookies.remove("Token");
+        Cookies.remove("token");
         
     
         navigate("/register");

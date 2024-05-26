@@ -19,7 +19,7 @@ function Food_detail() {
     })
 
     const config = {
-        headers: { Authorization: `Bearer ${Cookies.get('Token')}` }
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
     }
     useEffect(() => {
         axios
