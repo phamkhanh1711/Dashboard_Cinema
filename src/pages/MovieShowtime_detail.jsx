@@ -79,7 +79,7 @@ function MovieShowtimeDetail() {
             .put(`http://localhost:4000/show/updateShow/${params.showId}`, data)
             .then((res) => {
                 console.log(res)
-                navigate('/movieShowtime')
+                navigate('/showtime')
                 Swal.fire({
                     title: 'Cập Nhật Thành Công',
                     icon: 'success',
@@ -156,7 +156,7 @@ function MovieShowtimeDetail() {
                     onChange={handleChange}
                 />
                 <Button variant="contained" type="submit" sx={{ width: 300, marginTop: '20px' }}>
-                    Thêm Lịch Chiếu
+                    Cập Nhật Lịch Chiếu
                 </Button>
             </form>
         </Box>
