@@ -177,6 +177,7 @@ function AddProduct() {
                     title: 'Success',
                     text: 'Thêm phim thành công'
                 })
+                
                 navigate('/products')
             } catch (error) {
                 console.error(error)

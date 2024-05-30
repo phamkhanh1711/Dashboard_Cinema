@@ -42,13 +42,22 @@ function AddMovieShowtime() {
     }
 
     const handleTimeRangeChange = (newValue) => {
+        const formatTime = (time) => {
+            if (!time) return '';
+            let hours = time.hour();
+            let minutes = time.minute();
+            if (hours === 0 && minutes === 0) {
+                return '12:00';
+            }
+            return time.format('HH:mm');
+        };
+    
         setShowtime((prevState) => ({
             ...prevState,
-            startTime: newValue[0] ? newValue[0].format('HH:mm') : '',
-            endTime: newValue[1] ? newValue[1].format('HH:mm') : ''
-        }))
+            startTime: formatTime(newValue[0]),
+            endTime: formatTime(newValue[1])
+        }));
     }
-
     const [cinemaHallName, setCinemaHallName] = useState([])
 
     useEffect(() => {
@@ -143,7 +152,7 @@ function AddMovieShowtime() {
 
     return (
         <Box sx={{ maxWidth: 900, margin: 'auto', mt: 4 }}>
-            <h1>Tạo Lịch Chiếu</h1>
+            <h1 className='title' >Tạo Lịch Chiếu</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -160,19 +169,19 @@ function AddMovieShowtime() {
                         </DemoContainer>
                     </LocalizationProvider>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DemoContainer components={['MultiInputTimeRangeField']} sx={{ mt: 0, ml: 1 }}>
-                            <MultiInputTimeRangeField
-                                slotProps={{
-                                    textField: ({ position }) => ({
-                                        label: position === 'start' ? 'Từ' : 'Đến'
-                                    })
-                                }}
-                                onChange={handleTimeRangeChange}
-                            />
-                            {errors.startTime && <p style={{ color: 'red' }}>{errors.startTime}</p>}
-                            {errors.endTime && <p style={{ color: 'red' }}>{errors.endTime}</p>}
-                        </DemoContainer>
-                    </LocalizationProvider>
+    <DemoContainer components={['MultiInputTimeRangeField']} sx={{ mt: 0, ml: 1 }}>
+        <MultiInputTimeRangeField
+            slotProps={{
+                textField: ({ position }) => ({
+                    label: position === 'start' ? 'Từ' : 'Đến'
+                })
+            }}
+            onChange={handleTimeRangeChange}
+        />
+        {errors.startTime && <p style={{ color: 'red' }}>{errors.startTime}</p>}
+        {errors.endTime && <p style={{ color: 'red' }}>{errors.endTime}</p>}
+    </DemoContainer>
+</LocalizationProvider>
                 </div>
                 <Box style={{ display: 'flex', flexDirection: 'row', marginBottom: '16px' }}>
                     <FormControl style={{ width: '40%' }}>

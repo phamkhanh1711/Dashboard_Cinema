@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 import { CircularProgress } from '@mui/material'
+import Swal from 'sweetalert2'
 
 function Booking_detail() {
     const [bookingData, setBookingData] = useState(null)
@@ -39,6 +40,55 @@ function Booking_detail() {
                 console.error('Error fetching booking data:', error)
             })
     }, [params.bookingId])
+
+    const [clicked, setClicked] = useState(false)
+
+    const [clickedBookingId, setClickedBookingId] = useState(null);
+    const handleClick = (bookingId) => {
+        Swal.fire({
+            title: 'Bạn có chắc chắn muốn in vé không?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Có',
+            cancelButtonText: 'Không',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                setClickedBookingId(bookingId);
+        localStorage.setItem('clickedBookingId_' + bookingId, true);
+        exportToExcel();
+            }
+        });
+        // Cập nhật trạng thái đã click và lưu vào localStorage
+      
+    };
+    
+    const handlePrintAgain = () => {
+        Swal.fire({
+            title: 'Bạn có chắc chắn muốn in lại vé không?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Có',
+            cancelButtonText: 'Không',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Nếu người dùng chọn "Có", thì gọi hàm exportToExcel
+                exportToExcel();
+            }
+        });
+    };
+    
+    useEffect(() => {
+        // Lấy trạng thái đã click từ localStorage khi component được mount
+        const savedClicked = localStorage.getItem('clickedBookingId_' + params.bookingId);
+        if (savedClicked === 'true') {
+            setClickedBookingId(params.bookingId);
+        }
+    }, [params.bookingId]);
+    
+    useEffect(() => {
+        // Lưu trạng thái đã click vào localStorage mỗi khi nó thay đổi
+        localStorage.setItem('clickedBookingId_' + clickedBookingId, clickedBookingId !== null ? true : false);
+    }, [clickedBookingId]);
 
     const exportToExcel = () => {
         if (!bookingData) return
@@ -250,10 +300,24 @@ function Booking_detail() {
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                    <Button variant="contained" color="primary" onClick={exportToExcel}>
-                        In Vé
-                    </Button>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleClick(bookingData.detailBooking.bookingId)}
+                            disabled={clickedBookingId} // Sử dụng state clicked để điều chỉnh thuộc tính disabled
+                        >
+                            In Vé
+                        </Button>
+                    </Grid>
+                    {clickedBookingId && (
+                        <Grid item xs={12}>
+                            <Button variant="contained" color="secondary" onClick={handlePrintAgain}>
+                                Bạn có muốn in vé lại không?
+                            </Button>
+                        </Grid>
+                    )}
                 </Grid>
             </Grid>
         )
@@ -261,13 +325,12 @@ function Booking_detail() {
 
     return (
         <>
-        {loading ? (
+            {loading ? (
                 <CircularProgress className="loading" />
             ) : (
-        <Box sx={{ flexGrow: 1 }}>{renderBookingDetail()}</Box>
-    )}
+                <Box sx={{ flexGrow: 1 }}>{renderBookingDetail()}</Box>
+            )}
         </>
-        
     )
 }
 
